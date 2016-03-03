@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST, require_GET
 from django.http import HttpResponse, HttpResponseBadRequest
 

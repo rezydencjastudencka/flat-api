@@ -19,5 +19,7 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^counter/', include('counters.urls')),
     url(r'^session/', include('session.urls')),
+    url(r'^charge/', include('charges.urls')),
+    url(r'^transfer/', include('transfers.urls')),
     url(r'^admin/', include(admin.site.urls)),
 ]
