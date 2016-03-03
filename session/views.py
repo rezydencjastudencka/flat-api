@@ -9,10 +9,10 @@ from django.contrib.auth import authenticate, login, logout
 def create(request):
     req = json.loads(request.body)
 
-    if 'username' not in req or 'password' not in req:
+    if 'name' not in req or 'password' not in req:
         return HttpResponseBadRequest()
 
-    user = authenticate(username=req['username'], password=req['password']);
+    user = authenticate(username=req['name'], password=req['password']);
 
     if user is None:
         return HttpResponseNotFound()
@@ -36,4 +36,3 @@ def check(request):
 def remove(request):
     logout(request)
     return HttpResponse(json.dumps({'error': 'ok'}))
-
