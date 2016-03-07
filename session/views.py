@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 
 @require_POST
 def create(request):
-    req = json.loads(request.body)
+    req = json.loads(request.body.decode("utf-8"))
 
     if 'name' not in req or 'password' not in req:
         return HttpResponseBadRequest()
