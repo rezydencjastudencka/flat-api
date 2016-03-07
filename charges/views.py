@@ -3,14 +3,14 @@ import simplejson as json
 from datetime import datetime
 
 from django.contrib.auth.models import User
-from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.http import require_POST, require_GET, require_http_methods
 from django.http import HttpResponse, HttpResponseBadRequest
 
 from session.decorators import require_login
 from .models import Charge
 
 
-@require_POST
+@require_http_methods(['PUT'])
 @require_login
 def create(request):
     req = json.loads(request.body)
@@ -32,7 +32,7 @@ def create(request):
 def delete(request):
     req = json.loads(request.body)
 
-    if 'id' not in req:
+    if 'ids' not in req:
         return HttpResponseBadRequest()
 
     Charge.objects.filter(

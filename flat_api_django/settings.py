@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'counters',
     'charges',
     'transfers',
+    'users',
     'session',
     'corsheaders',
     'django.contrib.admin',
