@@ -12,7 +12,6 @@ class Counter(models.Model):
         gcm = GCM(settings.GCM_KEY)
         data = {'type': 'notify'}
         res = gcm.send_topic_message(topic="counter_"+self.name, data=data)
-        print res
         super(Counter, self).save(*args, **kwargs)
 
     @staticmethod
