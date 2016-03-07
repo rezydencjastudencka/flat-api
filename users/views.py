@@ -22,7 +22,7 @@ def index(request):
             'name': user.username
         })
 
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type='application/json')
 
 
 @require_GET
@@ -35,4 +35,4 @@ def show(request, user_id):
         'name': user.username
     }
 
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type='application/json')

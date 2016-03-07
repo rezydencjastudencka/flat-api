@@ -21,13 +21,14 @@ def create(request):
         return HttpResponseForbidden()
 
     login(request, user)
-    return HttpResponse(json.dumps({'error': 'ok'}))
+
+    return HttpResponse(json.dumps({'error': 'ok'}), content_type='application/json')
 
 
 @require_GET
 def check(request):
     if request.user.is_authenticated():
-        return HttpResponse(json.dumps({'error': 'ok'}))
+        return HttpResponse(json.dumps({'error': 'ok'}), content_type='application/json')
     else:
         return HttpResponseNotFound()
 
@@ -35,4 +36,4 @@ def check(request):
 @require_POST
 def remove(request):
     logout(request)
-    return HttpResponse(json.dumps({'error': 'ok'}))
+    return HttpResponse(json.dumps({'error': 'ok'}), content_type='application/json')

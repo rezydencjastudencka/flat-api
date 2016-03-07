@@ -14,7 +14,7 @@ from .models import Counter
 @require_login
 def index(request, counter_name):
     res = {'count': get_object_or_404(Counter, name=counter_name).counter}
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type='application/json')
 
 
 @require_POST
@@ -26,4 +26,4 @@ def modify(request, counter_name):
         return HttpResponseBadRequest
 
     res = {'error': 'ok', 'count': Counter.modify_and_get(req['amount'], name=counter_name).counter}
-    return HttpResponse(json.dumps(res))
+    return HttpResponse(json.dumps(res), content_type='application/json')
