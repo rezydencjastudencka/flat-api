@@ -61,7 +61,7 @@ def index(request, year, month):
 
 
 def create(request):
-    req = json.loads(request.body)
+    req = json.loads(request.body.decode("utf-8"))
 
     if 'date' not in req or 'name' not in req or 'amount' not in req or 'to' not in req:
         return HttpResponseBadRequest()
@@ -78,7 +78,7 @@ def create(request):
 @require_POST
 @require_login
 def delete(request):
-    req = json.loads(request.body)
+    req = json.loads(request.body.decode("utf-8"))
 
     if 'id' not in req:
         return HttpResponseBadRequest()

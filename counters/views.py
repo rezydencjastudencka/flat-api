@@ -20,7 +20,7 @@ def index(request, counter_name):
 @require_POST
 @require_login
 def modify(request, counter_name):
-    req = json.loads(request.body)
+    req = json.loads(request.body.decode("utf-8"))
 
     if 'amount' not in req or not isinstance(req['amount'], int):
         return HttpResponseBadRequest
