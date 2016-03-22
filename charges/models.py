@@ -11,7 +11,7 @@ class Charge(models.Model):
     to_users = models.ManyToManyField(User, related_name="expenses")
 
     def save(self, *args, **kwargs):
-        self.amount = ne.evaluate(self.raw_amount, local_dict={}, global_dict={}, truediv=True)
+        self.amount = float(ne.evaluate(self.raw_amount, local_dict={}, global_dict={}, truediv=True))
         super(Charge, self).save(*args, **kwargs)
 
     @staticmethod
