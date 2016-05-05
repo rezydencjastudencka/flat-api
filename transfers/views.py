@@ -25,6 +25,7 @@ def index(request, year, month):
 
     for income in incoming:
         res['incoming'].append({
+            'id': income.id,
             'name': income.name,
             'amount': income.amount,
             'date': income.date.isoformat(),
@@ -42,6 +43,7 @@ def index(request, year, month):
 
     for outcome in outgoing:
         res['outgoing'].append({
+            'id': outcome.id,
             'name': outcome.name,
             'amount': outcome.amount,
             'date': outcome.date.isoformat(),
@@ -80,7 +82,7 @@ def create(request):
 def delete(request):
     req = json.loads(request.body.decode("utf-8"))
 
-    if 'id' not in req:
+    if 'ids' not in req:
         return HttpResponseBadRequest()
 
     Transfer.objects.filter(
