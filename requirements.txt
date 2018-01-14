@@ -1,0 +1,12 @@
+certifi==2017.11.5
+chardet==3.0.4
+Django==1.11.9
+django-cors-headers==2.1.0
+gcm==0.3
+idna==2.6
+numexpr==2.6.4
+numpy==1.14.0
+pytz==2017.3
+requests==2.18.4
+simplejson==3.13.2
+urllib3==1.22
