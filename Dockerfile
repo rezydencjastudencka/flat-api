@@ -262,10 +262,11 @@ WORKDIR /opt/flat
 COPY requirements.txt /opt/flat
 RUN pip install -r requirements.txt
 
-
 COPY configs/nginx-app.conf /etc/nginx/nginx.conf
 
 COPY . /opt/flat/
+
+RUN python app/manage.py collectstatic --noinput
 
 CMD ["supervisord", "-c", "/opt/flat/configs/supervisor-app.conf"]
 
