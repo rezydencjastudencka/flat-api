@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-devel
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/opt/flat
+    ports:
+      - "8000:8000"
+
