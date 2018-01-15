@@ -5,12 +5,20 @@ image: docker:latest
 services:
   - docker:dind
 
-before_script:
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+cache:
+  paths:
+  - /var/lib/docker
+
+#before_script:
+
+stages:
+  - build
+  - deploy
 
 build-master:
   stage: build
   script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker build --pull -t "$CI_REGISTRY_IMAGE" .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
@@ -23,3 +31,14 @@ build:
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
     - master
+
+
+deploy-dev:
+  image: lwolf/kubectl_deployer:latest
+  stage: deploy
+  script:
+    - kubectl get cs
+  environment:
+    name: dev
+    url: https://dev.tropicalhosting.com
+  when: manual
