@@ -268,5 +268,5 @@ COPY . /opt/flat/
 
 RUN python app/manage.py collectstatic --noinput
 
-CMD ["supervisord", "-c", "/opt/flat/configs/supervisor-app.conf"]
+CMD ["/bin/sh", "-c", "enbsubst < configs/local.py.template > app/flat_api_django/local.py &&  supervisord -c /opt/flat/configs/supervisor-app.conf"]
 
