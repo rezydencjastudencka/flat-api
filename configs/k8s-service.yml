@@ -1,0 +1,24 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: flat-api-pod
+  labels:
+    app: flat-api
+spec:
+  containers:
+  - name: flat-api-container
+    image: registry.gitlab.memleak.pl:443/flat/flat-api:feature-dockerize
+    imagePullPolicy: Always
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: flat-api
+spec:
+  selector:
+    app: flat-api
+  ports:
+  - protocol: TCP
+    port: 80
+
+
