@@ -8,6 +8,10 @@ services:
 before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
+stages:
+  - build
+  - deploy
+
 build-master:
   stage: build
   script:
@@ -23,3 +27,19 @@ build:
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   except:
     - master
+
+
+deploy-dev:
+  image: lwolf/kubectl_deployer:latest
+  stage: deploy
+  script:
+#    - kubectl config set-cluster my-cluster --server=”$K8S_URL” — insecure-skip-tls-verify=true
+#    - kubectl config set-credentials admin — token=”$K8S_TOKEN”
+#    - kubectl config set-context default-context — cluster=my-cluster — user=admin
+#    - kubectl config use-context default-context
+    - kubectl get cs
+ #   - /bin/sh deploy.sh ${CI_BUILD_REF_NAME}_${CI_BUILD_REF} dev dev.tropicalhosting.com
+ environment:
+   name: dev
+   url: https://dev.tropicalhosting.com
+ when: manual
