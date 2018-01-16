@@ -153,8 +153,10 @@ spec:
         image: $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG
         imagePullPolicy: Always
         env:
-        - name: DATABASE_URL
-          value: "$DATABASE_URL"
+        - name: RAILS_SECRET_KEY
+          value: "k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n"
+        - name: RAILS_DEBUG 
+          value: True 
         ports:
         - name: api
           containerPort: 80
