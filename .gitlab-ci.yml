@@ -2,12 +2,14 @@
 # Official docker image.
 image: docker:latest
 
-#services:
-#  - docker:dind
+variables:
+  KUBE_DOMAIN: api.flat.kubernetes.tobiasz.memleak.pl
 
 stages:
   - build
+  - review
   - deploy
+  - cleanup
 
 build-master:
   stage: build
@@ -32,8 +34,39 @@ deploy-dev:
   stage: deploy
   script:
     - kubectl get cs
-    - kubectl apply -f configs/k8s-service.yml
+    - command scripts/deploy
   environment:
     name: dev
     url: http://dev.api.flat.kubernetes.tobiasz.memleak.pl
+  only:
+    - master
+
+
+review:
+  stage: review
+  script:
+    - command scripts/deploy
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
+    on_stop: stop_review
+  only:
+    - branches
+  except:
+    - master
+
+stop_review:
+  stage: cleanup
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - command scripts/destroy
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
   when: manual
+  only:
+    - branches
+  except:
+    - master
+
