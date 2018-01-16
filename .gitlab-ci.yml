@@ -2,9 +2,6 @@
 # Official docker image.
 image: docker:latest
 
-#services:
-#  - docker:dind
-
 stages:
   - build
   - deploy
@@ -32,8 +29,9 @@ deploy-dev:
   stage: deploy
   script:
     - kubectl get cs
-    - kubectl apply -f configs/k8s-service.yml
+    - command scripts/deploy
   environment:
     name: dev
     url: http://dev.api.flat.kubernetes.tobiasz.memleak.pl
-  when: manual
+  only:
+    - master
