@@ -251,7 +251,7 @@ RUN set -ex; \
 
 ENV SUPERVISOR_VERSION=3.3.1
 
-RUN apk add --no-cache gcc musl-dev g++ linux-headers
+RUN apk add --no-cache gcc musl-dev g++ linux-headers bash postgresql-dev
 
 RUN pip install supervisor==$SUPERVISOR_VERSION
 
@@ -269,5 +269,5 @@ COPY . /opt/flat/
 RUN cd app && cp "flat_api_django/local.py.example" "flat_api_django/local.py" \
 	&& python manage.py collectstatic --noinput; rm "flat_api_django/local.py"
 
-CMD ["supervisord", "-c", "/opt/flat/configs/supervisor-app.conf"]
+CMD ["bash", "/opt/flat/scripts/docker_entry"]
 
