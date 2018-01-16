@@ -118,6 +118,51 @@ EOF
 echo "Waiting for deployment..."
 kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/$postgres_name"
 
+
+echo "Migrating database..."
+cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: $name-migrate-db
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: app
+        image: $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG
+        imagePullPolicy: Always
+        command: ["bash", "scripts/docker_entry_migration", "debug"]
+        env:
+        - name: CI_BUILD_ID
+          value: "$CI_BUILD_ID"
+        - name: RAILS_SECRET_KEY
+          value: "k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n"
+        - name: RAILS_DEBUG 
+          value: "True"
+        - name: RAILS_ALLOWED_HOST
+          value: "*"
+        - name: RAILS_GCM_KEY
+          value: "gcm_key"
+        - name: RAILS_CORS_ALLOW_ALL
+          value: "True"
+        - name: RAILS_CORS_WHITELIST
+          value: ""
+        - name: RAILS_DB_NAME
+          value: "$POSTGRES_DB"
+        - name: RAILS_DB_USER 
+          value: "$POSTGRES_USER"
+        - name: RAILS_DB_PASS
+          value: "$POSTGRES_PASSWORD"
+        - name: RAILS_DB_HOST
+          value: "$postgres_name"
+        - name: RAILS_DB_PORT
+          value: "5432"
+EOF
+
+
 echo "Deploying $CI_ENVIRONMENT_SLUG (track: $track, replicas: $replicas) with $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG..."
 cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
 apiVersion: apps/v1
