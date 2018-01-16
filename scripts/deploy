@@ -153,8 +153,28 @@ spec:
         image: $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG
         imagePullPolicy: Always
         env:
-        - name: DATABASE_URL
-          value: "$DATABASE_URL"
+        - name: RAILS_SECRET_KEY
+          value: "k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n"
+        - name: RAILS_DEBUG 
+          value: True
+        - name: RAILS_ALLOWED_HOST
+          value: "*"
+        - name: RAILS_GCM_KEY
+          value: "gcm_key"
+        - name: RAILS_CORS_ALLOW_ALL
+          value: True
+        - name: RAILS_CORS_WHITELIST
+          value: ""
+        - name: RAILS_DB_NAME
+          value: "$POSTGRES_DB"
+        - name: RAILS_DB_USER 
+          value: "$POSTGRES_USE"
+        - name: RAILS_DB_PASS
+          value: "$POSTGRES_PASSWORD"
+        - name: RAILS_DB_HOST
+          value: "$postgres_name"
+        - name: RAILS_DB_PORT
+          value: "5432"
         ports:
         - name: api
           containerPort: 80
