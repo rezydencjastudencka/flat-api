@@ -8,7 +8,7 @@ SECRET_KEY = 'k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 GCM_KEY = 'gmckey'
 
