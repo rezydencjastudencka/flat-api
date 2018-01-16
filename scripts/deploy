@@ -173,6 +173,11 @@ spec:
           value: "5432"
 EOF
 
+echo "Wait for migration"
+until kubectl -n "$KUBE_NAMESPACE" get jobs $name-migrate-db -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' | grep True ; do echo -n '.'; sleep 1 ; done
+
+echo "Deleting job"
+kubectl -n "$KUBE_NAMESPACE" delete jobs/$name-migrate-db
 
 echo "Deploying $CI_ENVIRONMENT_SLUG (track: $track, replicas: $replicas) with $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG..."
 cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
