@@ -27,7 +27,7 @@ def create(request):
 
 @require_GET
 def check(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return HttpResponse(json.dumps({'error': 'ok'}), content_type='application/json')
     else:
         return HttpResponseNotFound()

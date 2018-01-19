@@ -22,5 +22,5 @@ urlpatterns = [
     url(r'^charge/', include('charges.urls')),
     url(r'^transfer/', include('transfers.urls')),
     url(r'^user/', include('users.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 ]
