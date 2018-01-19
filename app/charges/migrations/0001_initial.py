@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('amount', models.DecimalField(max_digits=10, decimal_places=2)),
                 ('raw_amount', models.CharField(max_length=1023)),
                 ('date', models.DateField()),
-                ('from_user', models.ForeignKey(related_name='revenues', to=settings.AUTH_USER_MODEL)),
+                ('from_user', models.ForeignKey(related_name='revenues', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
                 ('to_users', models.ManyToManyField(related_name='expenses', to=settings.AUTH_USER_MODEL)),
             ],
         ),
