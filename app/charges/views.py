@@ -24,7 +24,7 @@ def create(request):
     charge.save()
     charge.to_users = User.objects.filter(id__in=req['to'])
 
-    return HttpResponse(json.dumps(charge.to_json_as_revenue()), content_type='application/json')
+    return HttpResponse(json.dumps(Charge.objects.get(pk=charge.pk).to_json_as_revenue()), content_type='application/json')
 
 
 @require_POST
