@@ -10,7 +10,7 @@ from session.decorators import require_login
 from .models import Charge
 
 
-@require_http_methods(['PUT'])
+@require_POST
 @require_login
 def create(request):
     req = json.loads(request.body)
@@ -18,13 +18,13 @@ def create(request):
     if 'date' not in req or 'name' not in req or 'rawAmount' not in req or 'to' not in req:
         return HttpResponseBadRequest()
 
-    date = datetime.strptime(req['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    date = datetime.strptime(req['date'], "%Y-%m-%dT%H:%M:%S.%fZ").date()
 
     charge = Charge(from_user=request.user, raw_amount=req['rawAmount'], name=req['name'], date=date)
     charge.save()
     charge.to_users = User.objects.filter(id__in=req['to'])
 
-    return HttpResponse(json.dumps({'error': 'ok'}), content_type='application/json')
+    return HttpResponse(json.dumps(charge.to_json_as_revenue()), content_type='application/json')
 
 
 @require_POST
@@ -57,23 +57,7 @@ def index(request, year, month):
     }
 
     for revenue in revenues:
-        to_users = []
-        for user in revenue.to_users.all():
-            to_users.append({
-                'id': user.id,
-                'name': user.username,
-                'room': 1  # TODO
-            })
-
-        res['charges'].append({
-            'amount': revenue.amount,
-            'date': revenue.date.isoformat(),
-            'from': revenue.from_user_id,
-            'id': revenue.id,
-            'name': revenue.name,
-            'rawAmount': revenue.raw_amount,
-            'to': to_users
-        })
+        res['charges'].append(revenue.to_json_as_revenue())
 
     for expense in expenses:
         to_users = []
