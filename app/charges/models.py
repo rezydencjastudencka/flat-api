@@ -14,6 +14,25 @@ class Charge(models.Model):
         self.amount = float(ne.evaluate(self.raw_amount, local_dict={}, global_dict={}, truediv=True))
         super(Charge, self).save(*args, **kwargs)
 
+    def to_json_as_revenue(self):
+        to_users = []
+        for user in self.to_users.all():
+            to_users.append({
+                'id': user.id,
+                'name': user.username,
+                'room': 1  # TODO
+            })
+
+        return {
+            'amount': self.amount,
+            'date': self.date.isoformat(),
+            'from': self.from_user_id,
+            'id': self.id,
+            'name': self.name,
+            'rawAmount': self.raw_amount,
+            'to': to_users
+        }
+
     @staticmethod
     def get_revenues(year, month, user):
         return Charge.objects.filter(
