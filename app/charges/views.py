@@ -24,7 +24,7 @@ def create(request):
     charge.save()
     charge.to_users = User.objects.filter(id__in=req['to'])
 
-    return HttpResponse(json.dumps({'error': 'ok'}), content_type='application/json')
+    return HttpResponse(json.dumps({'error': 'ok', charge: charge}), content_type='application/json')
 
 
 @require_POST
