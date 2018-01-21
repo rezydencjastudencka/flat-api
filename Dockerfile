@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM python:2-alpine
 
 ENV NGINX_VERSION 1.13.8
 
@@ -268,21 +268,21 @@ ENV SUPERVISOR_VERSION=3.3.1
 
 RUN apk add --no-cache gcc musl-dev g++ linux-headers bash postgresql-dev
 
-RUN pip install supervisor-py3k
+RUN pip2 install supervisor-py3k
 
-RUN pip install uwsgi
+RUN pip3 install uwsgi
 
 RUN mkdir -p /opt/flat
 WORKDIR /opt/flat
 COPY requirements.txt /opt/flat
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 COPY configs/nginx-app.conf /etc/nginx/nginx.conf
 
 COPY . /opt/flat/
 
 RUN cd app && cp "flat_api_django/local.py.example" "flat_api_django/local.py" \
-	&& python manage.py collectstatic --noinput; rm "flat_api_django/local.py"
+	&& python3 manage.py collectstatic --noinput; rm "flat_api_django/local.py"
 
 CMD ["bash", "/opt/flat/scripts/docker_entry"]
 
