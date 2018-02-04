@@ -28,7 +28,7 @@ CORS_ORIGIN_WHITELIST = (
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': '$RAILS_DB_NAME',
         'USER': '$RAILS_DB_USER',
         'PASSWORD': '$RAILS_DB_PASS',
