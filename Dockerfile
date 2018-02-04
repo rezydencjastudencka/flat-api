@@ -251,7 +251,7 @@ RUN set -ex; \
 
 ENV SUPERVISOR_VERSION=3.3.1
 
-RUN apk add --no-cache gcc musl-dev g++ linux-headers bash postgresql-dev
+RUN apk add --no-cache gcc musl-dev g++ linux-headers bash mariadb-dev
 
 RUN pip install supervisor==$SUPERVISOR_VERSION
 
