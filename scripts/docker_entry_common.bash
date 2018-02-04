@@ -12,7 +12,7 @@ SECRET_KEY = '$RAILS_SECRET_KEY'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = $RAILS_DEBUG
 
-ALLOWED_HOSTS = ['$RAILS_ALLOWED_HOST']
+ALLOWED_HOSTS = [$RAILS_ALLOWED_HOST]
 
 GCM_KEY = '$RAILS_GCM_KEY'
 
@@ -28,7 +28,7 @@ CORS_ORIGIN_WHITELIST = (
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': '$RAILS_DB_NAME',
         'USER': '$RAILS_DB_USER',
         'PASSWORD': '$RAILS_DB_PASS',

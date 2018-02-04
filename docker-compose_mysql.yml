@@ -1,0 +1,33 @@
+version: '3.1'
+
+services:
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    ports:
+      - "3306:3306"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-mysql
+    environment:
+      RAILS_SECRET_KEY: "k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n"
+      RAILS_DEBUG: "True"
+      RAILS_ALLOWED_HOST: "localhost"
+      RAILS_GCM_KEY: ""
+      RAILS_CORS_WHITELIST: ""
+      RAILS_DB_NAME: "flat"
+      RAILS_DB_USER: "flat"
+      RAILS_DB_PASS: "flat"
+      RAILS_DB_HOST: "db"
+      RAILS_CORS_ALLOW_ALL: "True"
+      RAILS_ALLOWED_HOST: "'192.168.7.22'"
+      HOST: "db"
+      PORT: "3306"
+    volumes:
+      - .:/opt/flat
+    ports:
+      - "80:80"
