@@ -18,5 +18,5 @@ source "$SCRIPTS_ROOT_DIR/docker_entry_common.bash"
 create_config
 
 cd app
-python manage.py migrate
-(echo "from django.contrib.auth.models import User; User.objects.create_superuser('dummy', 'admin@example.com', 'dummy')" | python manage.py shell ) || true
+python3 manage.py migrate
+(echo "from django.contrib.auth.models import User; User.objects.create_superuser('dummy', 'admin@example.com', 'dummy')" | python3 manage.py shell ) || true
