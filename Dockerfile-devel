@@ -1,12 +1,17 @@
 FROM python:3-alpine
 
-RUN apk add --no-cache gcc musl-dev g++ postgresql-dev
+RUN apk add --no-cache gcc musl-dev g++
 
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir -p /opt/flat
-WORKDIR /opt/flat
-ADD requirements.txt /opt/flat
-RUN pip install -r requirements.txt
-ADD app /opt/flat
+RUN mkdir -p /opt/flat/app
 
+ADD requirements.txt /opt/flat
+# Skip PostgreSQL client dependency (use builtin SQLite driver)
+RUN sed -i '/psycopg/d' /opt/flat/requirements.txt
+RUN pip install -r /opt/flat/requirements.txt
+
+VOLUME /opt/flat/app
+WORKDIR /opt/flat/app
+EXPOSE 8000
+CMD python manage.py runserver 0.0.0.0:8000

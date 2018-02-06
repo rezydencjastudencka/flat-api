@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile-devel
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/opt/flat/app
+      - ./app:/opt/flat/app
     ports:
       - "8000:8000"
 

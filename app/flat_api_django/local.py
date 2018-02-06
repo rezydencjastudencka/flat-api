@@ -8,13 +8,11 @@ SECRET_KEY = 'k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 GCM_KEY = 'gmckey'
 
-CORS_ORIGIN_WHITELIST = (
-    'marcmos.maxmati.pl'
-)
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
