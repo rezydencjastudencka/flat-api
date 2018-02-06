@@ -11,7 +11,12 @@ ADD requirements.txt /opt/flat
 RUN sed -i '/psycopg/d' /opt/flat/requirements.txt
 RUN pip install -r /opt/flat/requirements.txt
 
+ADD app /opt/flat/app
+
 VOLUME /opt/flat/app
 WORKDIR /opt/flat/app
 EXPOSE 8000
+
+RUN python manage.py migrate
+
 CMD python manage.py runserver 0.0.0.0:8000
