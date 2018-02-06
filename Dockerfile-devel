@@ -7,6 +7,18 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /opt/flat
 WORKDIR /opt/flat
 ADD requirements.txt /opt/flat
-RUN pip install -r requirements.txt
-ADD app /opt/flat
 
+# SQLite used instead
+RUN sed -i '/psycopg2/d' requirements.txt
+
+RUN pip install -r requirements.txt
+
+VOLUME /opt/flat/app
+
+ADD app /opt/flat/app
+WORKDIR /opt/flat/app
+
+RUN python manage.py migrate
+
+EXPOSE 8000
+CMD python manage.py runserver 0.0.0.0:8000
