@@ -22,7 +22,7 @@ def create(request):
 
     charge = Charge(from_user=request.user, raw_amount=req['rawAmount'], name=req['name'], date=date)
     charge.save()
-    charge.to_users = User.objects.filter(id__in=req['to'])
+    charge.to_users.set(User.objects.filter(id__in=req['to']))
 
     return HttpResponse(json.dumps(charge.to_json_as_revenue()), content_type='application/json')
 

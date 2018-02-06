@@ -19,8 +19,8 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=255)),
                 ('amount', models.DecimalField(max_digits=10, decimal_places=2)),
                 ('date', models.DateField()),
-                ('from_user', models.ForeignKey(related_name='outgoing_transfers', to=settings.AUTH_USER_MODEL)),
-                ('to_user', models.ForeignKey(related_name='incoming_transfers', to=settings.AUTH_USER_MODEL)),
+                ('from_user', models.ForeignKey(related_name='outgoing_transfers', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
+                ('to_user', models.ForeignKey(related_name='incoming_transfers', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
     ]
