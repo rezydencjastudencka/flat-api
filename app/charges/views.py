@@ -3,8 +3,8 @@ import simplejson as json
 from datetime import datetime
 
 from django.contrib.auth.models import User
-from django.views.decorators.http import require_POST, require_GET, require_http_methods
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST, require_GET
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from fcm_django.models import FCMDevice
 
 from session.decorators import require_login
@@ -28,7 +28,7 @@ def create(request):
     for user in users:
         if user != request.user:
             FCMDevice.objects.filter(user=user).send_message(
-                data={'type': 'new_charge', 'charge_id': str(charge.id)})
+                data={'type': 'new_expense', 'expense_id': str(charge.id)})
 
     return HttpResponse(json.dumps(charge.to_json_as_revenue()), content_type='application/json')
 
@@ -51,6 +51,20 @@ def delete(request):
 
 @require_GET
 @require_login
+def get_expense(request, id):
+    expense = Charge.objects.filter(
+        to_users=request.user,
+        id=id
+    ).first()
+
+    if expense is None:
+        return HttpResponseNotFound()
+
+    return HttpResponse(json.dumps(expense.to_json_as_expense()), content_type='application/json')
+
+
+@require_GET
+@require_login
 def index(request, year, month):
     revenues = Charge.get_revenues(year, month, request.user)
     expenses = Charge.get_expenses(year, month, request.user)
@@ -66,26 +80,6 @@ def index(request, year, month):
         res['charges'].append(revenue.to_json_as_revenue())
 
     for expense in expenses:
-        to_users = []
-        for user in expense.to_users.all():
-            to_users.append({
-                'id': user.id,
-                'name': user.username,
-                'room': 1  # TODO
-            })
-
-        res['incomes'].append({
-            'amount': expense.amount / len(to_users),
-            'date': expense.date.isoformat(),
-            'from': {
-                'id': expense.from_user.id,
-                'name': expense.from_user.username,
-                'room': 1  # TODO
-            },
-            'id': expense.id,
-            'name': expense.name,
-            'rawAmount': expense.raw_amount,
-            'to': to_users
-        })
+        res['incomes'].append(expense.to_json_as_expense())
 
     return HttpResponse(json.dumps(res), content_type='application/json')
