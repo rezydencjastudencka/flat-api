@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import numexpr as ne
 
+
 class Charge(models.Model):
     name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -27,6 +28,29 @@ class Charge(models.Model):
             'amount': self.amount,
             'date': self.date.isoformat(),
             'from': self.from_user_id,
+            'id': self.id,
+            'name': self.name,
+            'rawAmount': self.raw_amount,
+            'to': to_users
+        }
+
+    def to_json_as_expense(self):
+        to_users = []
+        for user in self.to_users.all():
+            to_users.append({
+                'id': user.id,
+                'name': user.username,
+                'room': 1  # TODO
+            })
+
+        return {
+            'amount': self.amount / len(to_users),
+            'date': self.date.isoformat(),
+            'from': {
+                'id': self.from_user.id,
+                'name': self.from_user.username,
+                'room': 1  # TODO
+            },
             'id': self.id,
             'name': self.name,
             'rawAmount': self.raw_amount,
