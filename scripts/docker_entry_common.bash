@@ -37,5 +37,6 @@ DATABASES = {
     }
 }
 
+FCM_SERVER_KEY = $FCM_SERVER_KEY
 EOF
 }
