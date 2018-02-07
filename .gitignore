@@ -1,3 +1,5 @@
+app/static
+
 .idea
 
 app/flat_api_django/local.py
