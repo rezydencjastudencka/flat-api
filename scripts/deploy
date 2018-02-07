@@ -171,6 +171,8 @@ spec:
           value: "$postgres_name"
         - name: RAILS_DB_PORT
           value: "5432"
+        - name: FCM_SERVER_KEY
+          value: "$FCM_SERVER_KEY"
 EOF
 
 echo "Wait for migration"
@@ -238,6 +240,8 @@ spec:
           value: "$postgres_name"
         - name: RAILS_DB_PORT
           value: "5432"
+        - name: FCM_SERVER_KEY
+          value: "$FCM_SERVER_KEY"
         ports:
         - name: api
           containerPort: 80

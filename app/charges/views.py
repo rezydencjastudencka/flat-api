@@ -5,6 +5,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 from django.http import HttpResponse, HttpResponseBadRequest
+from fcm_django.models import FCMDevice
 
 from session.decorators import require_login
 from .models import Charge
@@ -22,7 +23,12 @@ def create(request):
 
     charge = Charge(from_user=request.user, raw_amount=req['rawAmount'], name=req['name'], date=date)
     charge.save()
-    charge.to_users.set(User.objects.filter(id__in=req['to']))
+    users = User.objects.filter(id__in=req['to'])
+    charge.to_users.set(users)
+    for user in users:
+        if user != request.user:
+            FCMDevice.objects.filter(user=user).send_message(
+                data={'type': 'new_charge', 'charge_id': str(charge.id)})
 
     return HttpResponse(json.dumps(charge.to_json_as_revenue()), content_type='application/json')
 
