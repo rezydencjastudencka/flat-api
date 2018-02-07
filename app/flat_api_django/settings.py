@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'transfers',
     'users',
     'session',
+    'fcm',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'fcm_django',
 )
 
 MIDDLEWARE = (
@@ -67,6 +69,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'flat_api_django.wsgi.application'
+
+FCM_DJANGO_SETTINGS = {
+        'FCM_SERVER_KEY': FCM_SERVER_KEY,
+        'ONE_DEVICE_PER_USER': False,
+        'DELETE_INACTIVE_DEVICES': True,
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
