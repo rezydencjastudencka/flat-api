@@ -376,8 +376,7 @@ COPY configs/nginx-app.conf /etc/nginx/nginx.conf
 
 COPY . /opt/flat/
 
-RUN cd app && cp "flat_api_django/local.py.example" "flat_api_django/local.py" \
-	&& python3 manage.py collectstatic --noinput; rm "flat_api_django/local.py"
+RUN cd app && python3 manage.py collectstatic --noinput
 
 CMD ["bash", "/opt/flat/scripts/docker_entry"]
 
