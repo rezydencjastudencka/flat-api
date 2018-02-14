@@ -5,12 +5,14 @@ variables:
 
 stages:
   - build
+  - test
+  - build-master
   - review
   - deploy
   - cleanup
 
 build-master:
-  stage: build
+  stage: build-master
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE" .
@@ -26,8 +28,13 @@ build:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-  except:
-    - master
+
+test:
+  image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  stage: test
+  script:
+    - cd app && python manage.py test --noinput
+
 
 deploy-dev:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
