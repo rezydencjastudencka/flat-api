@@ -4,10 +4,33 @@ variables:
   KUBE_DOMAIN: api.flat.kubernetes.tobiasz.memleak.pl
 
 stages:
+  - build-test
+  - test
   - build
   - review
   - deploy
   - cleanup
+
+build-test:
+  stage: build-test
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-ci-tests" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-ci-tests"
+  except:
+    - master
+
+test:
+  image: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-ci-tests"
+  stage: test
+  services:
+    - mysql:latest
+  variables:
+    MYSQL_DATABASE: flat_test
+    MYSQL_ROOT_PASSWORD: super_tajne_haslo
+  script:
+    - bash scripts/create_ci_test_config
+    - cd app && python3 manage.py test --noinput
 
 build-master:
   stage: build
