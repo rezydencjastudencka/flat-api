@@ -7,8 +7,8 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /opt/flat/app
 
 ADD requirements.txt /opt/flat
-# Skip PostgreSQL client dependency (use builtin SQLite driver)
-RUN sed -i '/psycopg/d' /opt/flat/requirements.txt
+# Skip MySQL client dependency (use builtin SQLite driver)
+RUN sed -i '/mysqlclient/d' /opt/flat/requirements.txt
 RUN pip install -r /opt/flat/requirements.txt
 
 VOLUME /opt/flat/app
