@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from graphene_django.views import GraphQLView
 
 urlpatterns = [
     url(r'^counter/', include('counters.urls')),
@@ -24,4 +25,6 @@ urlpatterns = [
     url(r'^user/', include('users.urls')),
     url(r'^fcm/', include('fcm.urls')),
     url(r'^admin/', admin.site.urls),
+    url(r'^graphql', GraphQLView.as_view(graphiql=True)),
+
 ]
