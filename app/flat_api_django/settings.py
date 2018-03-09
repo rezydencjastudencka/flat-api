@@ -39,7 +39,12 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'fcm_django',
+    'graphene_django',
 )
+
+GRAPHENE = {
+    'SCHEMA': 'flat_api_django.schema.schema'
+}
 
 MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
