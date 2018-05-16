@@ -8,5 +8,7 @@ class Query(charges.schema.Query, graphene.ObjectType):
     # as we begin to add more apps to our project
     pass
 
+class Mutations(graphene.ObjectType):
+    delete_charge = charges.schema.DeleteCharge.Field()
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, mutation=Mutations)
