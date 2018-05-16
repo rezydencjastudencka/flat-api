@@ -54,3 +54,17 @@ class Query(object):
 
     def resolve_users(self, info, **kwargs):
         return User.objects.none()
+        
+class DeleteCharge(graphene.Mutation):
+    class Arguments:
+        id = graphene.Int(required=True) # veryfi for id type
+
+    ok = graphene.Boolean()
+
+    def mutate(self, info, id):
+        Charge.objects.filter(
+            from_user=request.user,
+            id__in=req['ids']
+        ).delete()
+        ok = True #verify delete result
+        return DeleteCharge(ok=ok)
