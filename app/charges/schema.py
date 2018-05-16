@@ -63,8 +63,8 @@ class DeleteCharge(graphene.Mutation):
 
     def mutate(self, info, id):
         Charge.objects.filter(
-            from_user=request.user,
-            id__in=req['ids']
+            from_user=info.context.user,
+            id__in=[id]
         ).delete()
         ok = True #verify delete result
         return DeleteCharge(ok=ok)
