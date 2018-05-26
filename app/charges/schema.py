@@ -9,6 +9,11 @@ from session.decorators import empty_if_unauthenticated, none_if_unauthenticated
 from .models import Charge
 
 
+class StatusCodes(graphene.Enum):
+    NOT_FOUND = 0
+    SUCCESS = 1
+
+
 class ExpenseType(DjangoObjectType):
     amount = graphene.Float()
 
@@ -123,7 +128,28 @@ class AddRevenue(graphene.Mutation):
         return revenue
 
 
+class DeleteCharge(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    status = graphene.Field(StatusCodes, required=True)
+
+    @empty_if_unauthenticated
+    def mutate(self, info, id):
+        deletedObjs, _ = Charge.objects.filter(
+            from_user=info.context.user,
+            id=id
+        ).delete()
+        if deletedObjs > 1:
+            status = StatusCodes.SUCCESS.value
+        else:
+            status = StatusCodes.NOT_FOUND.value
+
+        return DeleteCharge(status=status)
+
+
 class Mutation(object):
     add_revenue = AddRevenue.Field()
     create_flat = CreateFlat.Field()
     join_flat = JoinFlat.Field()
+    delete_charge = DeleteCharge.Field()
