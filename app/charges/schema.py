@@ -52,5 +52,6 @@ class Query(object):
 
         return Charge.get_revenues(year, month, info.context.user)
 
+    @empty_if_unauthenticated
     def resolve_users(self, info, **kwargs):
-        return User.objects.none()
+        return User.objects.all()
