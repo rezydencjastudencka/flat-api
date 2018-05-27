@@ -69,7 +69,7 @@ class AddRevenue(graphene.Mutation):
     @null_if_unauthenticated
     def mutate(self, info, name, amount, date, to):
         revenue = Charge(from_user=info.context.user, raw_amount=amount, name=name,
-                         date=datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%fZ").date())
+                         date=datetime.strptime(date, "%Y-%m-%d").date())
         revenue.save()
 
         users = User.objects.filter(id__in=to)
