@@ -1,9 +1,11 @@
 import graphene
 from django.contrib.auth.models import User
+from datetime import datetime
 
+from django.db import transaction
 from graphene_django.types import DjangoObjectType
 
-from session.decorators import empty_if_unauthenticated
+from session.decorators import empty_if_unauthenticated, none_if_unauthenticated
 from .models import Charge
 
 
@@ -54,3 +56,30 @@ class Query(object):
 
     def resolve_users(self, info, **kwargs):
         return User.objects.none()
+
+
+class AddRevenue(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+        amount = graphene.String(required=True)
+        date = graphene.types.datetime.Date(required=True)
+        to = graphene.List(graphene.NonNull(graphene.ID))
+
+    Output = RevenueType
+
+    @none_if_unauthenticated
+    def mutate(self, info, name, amount, date, to):
+
+        with transaction.atomic():
+            revenue = Charge(from_user=info.context.user, raw_amount=amount, name=name,
+                             date=date)
+            revenue.save()
+
+            users = User.objects.filter(id__in=to)
+            revenue.to_users.set(users)
+
+        return revenue
+
+
+class Mutation(object):
+    add_revenue = AddRevenue.Field()
