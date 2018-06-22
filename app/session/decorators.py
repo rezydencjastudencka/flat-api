@@ -17,3 +17,11 @@ def empty_if_unauthenticated(func):
         return func(self, info, *args, **kwargs)
 
     return decorator
+
+def none_if_unauthenticated(func):
+    def decorator(self, info, *args, **kwargs):
+        if not info.context.user.is_authenticated:
+            return None
+        return func(self, info, *args, **kwargs)
+
+    return decorator
