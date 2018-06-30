@@ -17,7 +17,14 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from graphene_django.views import GraphQLView
 
+
+from django.http import HttpResponse
+def test(request):
+    return HttpResponse('')
+
+
 urlpatterns = [
+    url(r'^$', test),
     url(r'^counter/', include('counters.urls')),
     url(r'^session/', include('session.urls')),
     url(r'^charge/', include('charges.urls')),
