@@ -1,49 +1,45 @@
 #!/usr/bin/env bash
 
-set -e 
+set -e
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
+unset KUBECONFIG
+unset KUBE_CA_PEM_FILE
+unset KUBE_URL
+unset KUBE_CA_PEM
+unset KUBE_TOKEN
 
-export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+cat ~/.kube/config
 
-source "$DEPLOY_ROOT_DIR/common.bash"
-
-ensure_environment_url
-ensure_deploy_variables
-
-CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_URL}"
-CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/http:\/\//}"
-CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/https:\/\//}"
-
-echo "Creating namespace $KUBE_NAMESPACE"
-
-track="${1-stable}"
-name="$CI_ENVIRONMENT_SLUG"
-
-if [[ "$track" != "stable" ]]; then
-  name="$name-$track"
-fi
+KUBE_NAMESPACE=flat-production
+TRACK="production"
+name="flat-production"
 
 replicas="1"
 
-env_track="${track^^}"
-env_slug="${CI_ENVIRONMENT_SLUG//-/_}"
-env_slug="${env_slug^^}"
-
 echo "Configuring database..."
-mysql_name="${CI_ENVIRONMENT_SLUG}-mysql"
-mysql_app="${CI_ENVIRONMENT_SLUG}-mysql"
+mysql_name="mysql"
+mysql_app="mysql"
+migrate_db_name="migrate-db"
+URL="flat.kubernetes.memleak.pl"
 
 MYSQL_USER="${MYSQL_USER:-user}"
 MYSQL_PASSWORD="${MYSQL_PASSWORD:-password}"
-MYSQL_DATABASE="${MYSQL_DATABASE:-$env_slug}"
+MYSQL_DATABASE="${MYSQL_DATABASE:-flat}"
+
+echo "Creating namespace $KUBE_NAMESPACE"
 
 cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -80,9 +76,16 @@ spec:
           value: "$MYSQL_DATABASE"
         - name: MYSQL_RANDOM_ROOT_PASSWORD
           value: "yes"
+        volumeMounts:
+        - name: mysql-data
+          mountPath: "/var/lib/mysql"
         ports:
         - name: mysql
           containerPort: 3306
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: mysql-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -110,11 +113,10 @@ cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: $name-migrate-db
+  name: $migrate_db_name
   namespace: $KUBE_NAMESPACE
   labels:
-    app: $CI_ENVIRONMENT_SLUG
-    track: "$track"
+    track: "$TRACK"
     pipeline_id: "$CI_PIPELINE_ID"
     build_id: "$CI_BUILD_ID"
 spec:
@@ -122,23 +124,22 @@ spec:
   template:
     metadata:
       labels:
-        name: $name-migrate-db
-        app: $CI_ENVIRONMENT_SLUG
-        track: "$track"
+        name: $migrate_db_name
+        track: "$TRACK"
     spec:
       restartPolicy: Never
       containers:
       - name: app
-        image: $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG
+        image: "$CI_REGISTRY_IMAGE:master"
         imagePullPolicy: Always
         command: ["bash", "scripts/docker_entry_migration", "debug"]
         env:
         - name: CI_BUILD_ID
           value: "$CI_BUILD_ID"
         - name: RAILS_SECRET_KEY
-          value: "k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n"
+          value: "fdssdfasdfsdfdsafasafsafadfdsfsf"
         - name: RAILS_DEBUG 
-          value: "True"
+          value: "False"
         - name: RAILS_ALLOWED_HOST
           value: "*"
         - name: RAILS_GCM_KEY
@@ -161,13 +162,15 @@ spec:
           value: "$FCM_SERVER_KEY"
 EOF
 
+kubectl -n "$KUBE_NAMESPACE" get jobs
+
 echo "Wait for migration"
-until kubectl -n "$KUBE_NAMESPACE" get jobs $name-migrate-db -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' | grep True ; do echo -n '.'; sleep 1 ; done
+until kubectl -n "$KUBE_NAMESPACE" get jobs $migrate_db_name -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' | grep True ; do echo -n '.'; sleep 1 ; done
 
 echo "Deleting job"
-kubectl -n "$KUBE_NAMESPACE" delete jobs/$name-migrate-db
+kubectl -n "$KUBE_NAMESPACE" delete jobs/$migrate_db_name
 
-echo "Deploying $CI_ENVIRONMENT_SLUG (track: $track, replicas: $replicas) with $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG..."
+echo "Deploying $CI_ENVIRONMENT_SLUG (track: $TRACK, replicas: $replicas) with $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG..."
 cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
 apiVersion: apps/v1
 kind: Deployment
@@ -175,8 +178,7 @@ metadata:
   name: $name
   namespace: $KUBE_NAMESPACE
   labels:
-    app: $CI_ENVIRONMENT_SLUG
-    track: "$track"
+    track: "$TRACK"
     pipeline_id: "$CI_PIPELINE_ID"
     build_id: "$CI_BUILD_ID"
     tier: api
@@ -184,28 +186,26 @@ spec:
   replicas: $replicas
   selector:
     matchLabels:
-      app: $CI_ENVIRONMENT_SLUG
       tier: api
-      track: "$track"
+      track: "$TRACK"
   template:
     metadata:
       labels:
         name: $name
-        app: $CI_ENVIRONMENT_SLUG
-        track: "$track"
+        track: "$TRACK"
         tier: api
     spec:
       imagePullSecrets:
       - name: gitlab-registry-pernament
       containers:
       - name: app
-        image: $CI_REGISTRY_IMAGE:$CI_REGISTRY_TAG
+        image: "$CI_REGISTRY_IMAGE:master"
         imagePullPolicy: Always
         env:
         - name: CI_BUILD_ID
           value: "$CI_BUILD_ID"
         - name: RAILS_SECRET_KEY
-          value: "k#xfum2s88z=a++od3x66c5gzk&c3qqd-_g1%&vuxeyh&vxi-n"
+          value: "fdfsdafsafasdfsdafsadfdsfsdafsdaf"
         - name: RAILS_DEBUG 
           value: "True"
         - name: RAILS_ALLOWED_HOST
@@ -235,10 +235,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: $CI_ENVIRONMENT_SLUG
+  name: $name
   namespace: $KUBE_NAMESPACE
   labels:
-    app: $CI_ENVIRONMENT_SLUG
+    track: $TRACK
     pipeline_id: "$CI_PIPELINE_ID"
     build_id: "$CI_BUILD_ID"
 spec:
@@ -247,33 +247,33 @@ spec:
       port: 80
       targetPort: api
   selector:
-    app: $CI_ENVIRONMENT_SLUG
+    track: $TRACK
     tier: api
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: $CI_ENVIRONMENT_SLUG
+  name: $TRACK
   namespace: $KUBE_NAMESPACE
   labels:
-    app: $CI_ENVIRONMENT_SLUG
+    track: $TRACK
     pipeline_id: "$CI_PIPELINE_ID"
     build_id: "$CI_BUILD_ID"
   annotations:
     kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-  - host: $CI_ENVIRONMENT_HOSTNAME
+  - host: $URL
     http:
       paths:
       - path: /
         backend:
-          serviceName: $CI_ENVIRONMENT_SLUG
+          serviceName: $name
           servicePort: 80
 EOF
 
 echo "Waiting for deployment..."
 kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/$name"
 
-echo "Application is accessible at: ${CI_ENVIRONMENT_URL}"
+echo "Application is accessible at: ${URL}"
 echo ""
