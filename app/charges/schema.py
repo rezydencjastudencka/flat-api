@@ -61,7 +61,7 @@ class Query(object):
 
     @empty_if_unauthenticated
     def resolve_users(self, info, **kwargs):
-        return User.objects.all()
+        return User.objects.filter(profile__flat=info.context.user.profile.flat)
 
 
 class CreateFlat(graphene.Mutation):
