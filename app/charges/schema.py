@@ -118,6 +118,7 @@ class AddRevenue(graphene.Mutation):
 
             users = User.objects.filter(id__in=to)
             revenue.to_users.set(users)
+            revenue.clean()
 
         return revenue
 
