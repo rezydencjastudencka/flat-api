@@ -9,6 +9,7 @@ stages:
   - build
   - review
   - deploy
+  - deploy-production
   - cleanup
 
 build-test:
@@ -62,19 +63,35 @@ deploy-dev:
     - master
 
 
-review:
+deploy-production:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
-  stage: review
+  stage: deploy-production
   script:
-    - command scripts/deploy
+    - mkdir -p ~/.kube
+    - echo $KUBE_PROD_CONFIG | base64 -d > ~/.kube/config
+    - command scripts/deploy_prod
   environment:
-    name: review/$CI_COMMIT_REF_NAME
-    url: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
-    on_stop: stop_review
-  only:
-    - branches
-  except:
-    - master
+    name: production
+    url: https://flat.kubernetes.memleak.pl
+  when: manual
+#  only:
+#    - master
+
+
+
+#review:
+#  image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
+#  stage: review
+#  script:
+#    - command scripts/deploy
+#  environment:
+#    name: review/$CI_COMMIT_REF_NAME
+#    url: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
+#    on_stop: stop_review
+#  only:
+#    - branches
+#  except:
+#    - master
 
 stop_review:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
