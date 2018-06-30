@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from graphene_django.types import DjangoObjectType
 
+from charges.models import Flat, Profile
 from session.decorators import empty_if_unauthenticated, none_if_unauthenticated
 from .models import Charge
 
@@ -22,6 +23,11 @@ class ExpenseType(DjangoObjectType):
 class RevenueType(DjangoObjectType):
     class Meta:
         model = Charge
+
+
+class FlatType(DjangoObjectType):
+    class Meta:
+        model = Flat
 
 
 class UserType(DjangoObjectType):
@@ -58,6 +64,42 @@ class Query(object):
         return User.objects.all()
 
 
+class CreateFlat(graphene.Mutation):
+    class Arguments:
+        flatname = graphene.String(required=True)
+        username = graphene.String(required=True)
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    Output = FlatType
+
+    def mutate(self, info, flatname, username, email, password):
+        with transaction.atomic():
+            flat = Flat.objects.create(name=flatname)
+            user = User.objects.create_user(username, email, password)
+            Profile.objects.create(flat=flat, user=user)
+
+            return flat
+
+
+class JoinFlat(graphene.Mutation):
+    class Arguments:
+        join_token = graphene.String(required=True)
+        username = graphene.String(required=True)
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    Output = FlatType
+
+    def mutate(self, info, join_token, username, email, password):
+        with transaction.atomic():
+            flat = Flat.objects.filter(join_token__exact=join_token).first()
+            user = User.objects.create_user(username, email, password)
+            Profile.objects.create(flat=flat, user=user)
+
+            return flat
+
+
 class AddRevenue(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
@@ -69,7 +111,6 @@ class AddRevenue(graphene.Mutation):
 
     @none_if_unauthenticated
     def mutate(self, info, name, amount, date, to):
-
         with transaction.atomic():
             revenue = Charge(from_user=info.context.user, raw_amount=amount, name=name,
                              date=date)
@@ -83,3 +124,5 @@ class AddRevenue(graphene.Mutation):
 
 class Mutation(object):
     add_revenue = AddRevenue.Field()
+    create_flat = CreateFlat.Field()
+    join_flat = JoinFlat.Field()
