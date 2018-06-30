@@ -9,6 +9,7 @@ stages:
   - build
   - review
   - deploy
+  - deploy-production
   - cleanup
 
 build-test:
@@ -60,6 +61,23 @@ deploy-dev:
     url: http://dev.$KUBE_DOMAIN
   only:
     - master
+
+
+deploy-production:
+  image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
+  stage: deploy-production
+  script:
+    - env
+    - mkdir -p ~/.kube
+    - echo $KUBE_PROD_CONFIG | base64 -d > ~/.kube/config
+    - command scripts/deploy_prod
+  environment:
+    name: production
+    url: https://flat.kubernates.memleak.pl
+  when: manual
+#  only:
+#    - master
+
 
 
 review:
