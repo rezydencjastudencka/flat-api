@@ -12,7 +12,7 @@ from session.decorators import require_login
 @require_GET
 @require_login
 def index(request):
-    users = User.objects.all()
+    users = User.objects.filter(profile__flat=request.user.profile.flat)
 
     res = []
 

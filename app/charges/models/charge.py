@@ -1,5 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import models
 import numexpr as ne
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
@@ -13,6 +14,11 @@ class Charge(models.Model):
     date = models.DateField()
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="revenues")
     to_users = models.ManyToManyField(User, related_name="expenses")
+
+    def clean(self):
+        flat = self.from_user.profile.flat
+        if any(user.profile.flat != flat for user in self.to_users.all()):
+            raise ValidationError('You cannot charge user from different flat.')
 
     def save(self, *args, **kwargs):
         self.amount = float(ne.evaluate(self.raw_amount, local_dict={}, global_dict={}, truediv=True))

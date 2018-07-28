@@ -3,6 +3,7 @@ import simplejson as json
 from datetime import datetime
 
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.views.decorators.http import require_POST, require_GET
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 
@@ -20,10 +21,12 @@ def create(request):
 
     date = datetime.strptime(req['date'], "%Y-%m-%dT%H:%M:%S.%fZ").date()
 
-    charge = Charge(from_user=request.user, raw_amount=req['rawAmount'], name=req['name'], date=date)
-    charge.save()
-    users = User.objects.filter(id__in=req['to'])
-    charge.to_users.set(users)
+    with transaction.atomic():
+        charge = Charge(from_user=request.user, raw_amount=req['rawAmount'], name=req['name'], date=date)
+        charge.save()
+        users = User.objects.filter(id__in=req['to'])
+        charge.to_users.set(users)
+        charge.clean()
 
     return HttpResponse(json.dumps(charge.to_json_as_revenue()), content_type='application/json')
 
