@@ -74,24 +74,24 @@ deploy-production:
     name: production
     url: https://flat.kubernetes.memleak.pl
   when: manual
-#  only:
-#    - master
+  only:
+    - master
 
 
 
-#review:
-#  image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
-#  stage: review
-#  script:
-#    - command scripts/deploy
-#  environment:
-#    name: review/$CI_COMMIT_REF_NAME
-#    url: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
-#    on_stop: stop_review
-#  only:
-#    - branches
-#  except:
-#    - master
+review:
+  image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
+  stage: review
+  script:
+    - command scripts/deploy
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
+    on_stop: stop_review
+  only:
+    - branches
+  except:
+    - master
 
 stop_review:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
