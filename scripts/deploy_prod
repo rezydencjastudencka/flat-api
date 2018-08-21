@@ -24,10 +24,18 @@ echo "Configuring database..."
 mysql_name="mysql"
 mysql_app="mysql"
 migrate_db_name="migrate-db"
+MYSQL_USER="flat"
+MYSQL_DATABASE="flat"
 
-MYSQL_USER="${MYSQL_USER:-user}"
-MYSQL_PASSWORD="${MYSQL_PASSWORD:-password}"
-MYSQL_DATABASE="${MYSQL_DATABASE:-flat}"
+DJANGO_SECRET_KEY="$PROD_DJANGO_SECRET_KEY"
+GCM_KEY="$PROD_GCM_KEY"
+FCM_SERVER_KEY="$PROD_FCM_SERVER_KEY"
+MYSQL_PASSWORD="$PROD_MYSQL_PASSWORD"
+
+if [ -z "$DJANGO_SECRET_KEY" ]; then echo "Missing DJANGO_SECRET_KEY";  exit 1; 
+if [ -z "$GCM_KEY" ]; then echo "Missing GCM_KEY";  exit 1; 
+if [ -z "$FCM_SERVER_KEY" ]; then echo "Missing FCM_SERVER_KEY";  exit 1; 
+if [ -z "$MYSQL_PASSWORD" ]; then echo "Missing MYSQL_PASSWORD";  exit 1; 
 
 cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
 kind: PersistentVolumeClaim
@@ -138,13 +146,13 @@ spec:
         - name: CI_BUILD_ID
           value: "$CI_BUILD_ID"
         - name: RAILS_SECRET_KEY
-          value: "fdssdfasdfsdfdsafasafsafadfdsfsf"
+          value: "$DJANGO_SECRET_KEY"
         - name: RAILS_DEBUG 
           value: "False"
         - name: RAILS_ALLOWED_HOST
           value: "*"
         - name: RAILS_GCM_KEY
-          value: "gcm_key"
+          value: "$GCM_KEY"
         - name: RAILS_CORS_ALLOW_ALL
           value: "True"
         - name: RAILS_CORS_WHITELIST
@@ -206,13 +214,13 @@ spec:
         - name: CI_BUILD_ID
           value: "$CI_BUILD_ID"
         - name: RAILS_SECRET_KEY
-          value: "fdfsdafsafasdfsdafsadfdsfsdafsdaf"
+          value: "$DJANGO_SECRET_KEY"
         - name: RAILS_DEBUG 
-          value: "True"
+          value: "False"
         - name: RAILS_ALLOWED_HOST
           value: "*"
         - name: RAILS_GCM_KEY
-          value: "gcm_key"
+          value: "$GCM_KEY"
         - name: RAILS_CORS_ALLOW_ALL
           value: "True"
         - name: RAILS_CORS_WHITELIST
