@@ -269,7 +269,7 @@ spec:
   secretName: $name-tls
   issuerRef:
     name: letsencrypt-prod
-    kind: ClusterIssuer
+    kind: Issuer
   commonName: $URL
   dnsNames:
   - $URL
