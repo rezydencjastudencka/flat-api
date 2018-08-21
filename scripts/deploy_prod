@@ -252,10 +252,30 @@ spec:
     track: $TRACK
     tier: api
 ---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: $name-tls
+  namespace: $KUBE_NAMESPACE
+spec:
+  secretName: $name-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: $URL
+  dnsNames:
+  - $URL
+  acme:
+    config:
+    - http01:
+        ingress: $name
+      domains:
+      - $URL
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: $TRACK
+  name: $name
   namespace: $KUBE_NAMESPACE
   labels:
     track: $TRACK
