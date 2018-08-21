@@ -9,7 +9,7 @@ unset KUBE_CA_PEM
 unset KUBE_TOKEN
 
 #cat ~/.kube/config
-CI_IMAGE_VERSION="feature-deploy-prod"
+CI_IMAGE_VERSION="master"
 URL="api.new.flat.memleak.pl"
 IP_NAME="flat-ip"
 
