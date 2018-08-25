@@ -250,6 +250,26 @@ spec:
     app: $CI_ENVIRONMENT_SLUG
     tier: api
 ---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: $CI_ENVIRONMENT_SLUG-tls
+  namespace: $KUBE_NAMESPACE
+spec:
+  secretName: $CI_ENVIRONMENT_SLUG-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: $CI_ENVIRONMENT_HOSTNAME
+  dnsNames:
+  - $CI_ENVIRONMENT_HOSTNAME
+  acme:
+    config:
+    - http01:
+        ingress: $CI_ENVIRONMENT_SLUG
+      domains:
+      - $CI_ENVIRONMENT_HOSTNAME
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -262,6 +282,8 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
 spec:
+  tls:
+  - secretName: $CI_ENVIRONMENT_SLUG-tls
   rules:
   - host: $CI_ENVIRONMENT_HOSTNAME
     http:
