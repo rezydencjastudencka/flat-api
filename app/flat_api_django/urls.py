@@ -15,7 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from graphene_django.views import GraphQLView
+
+from flat_api_django.graphql_view import FlatGraphQLView
 
 
 from django.http import HttpResponse
@@ -32,6 +33,6 @@ urlpatterns = [
     url(r'^user/', include('users.urls')),
     url(r'^fcm/', include('fcm.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^graphql', GraphQLView.as_view(graphiql=True)),
+    url(r'^graphql', FlatGraphQLView.as_view(graphiql=True)),
 
 ]
