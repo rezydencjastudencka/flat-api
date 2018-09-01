@@ -5,7 +5,7 @@ from django.db import transaction
 from graphene_django.types import DjangoObjectType
 
 from charges.models import Flat, Profile
-from session.decorators import empty_if_unauthenticated, none_if_unauthenticated
+from session.decorators import empty_if_unauthenticated, none_if_unauthenticated, raise_if_unauthenticated
 from .models import Charge
 
 
@@ -134,7 +134,7 @@ class DeleteCharge(graphene.Mutation):
 
     status = graphene.Field(StatusCodes, required=True)
 
-    @empty_if_unauthenticated
+    @raise_if_unauthenticated
     def mutate(self, info, id):
         deletedObjs, _ = Charge.objects.filter(
             from_user=info.context.user,
