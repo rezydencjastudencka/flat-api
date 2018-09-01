@@ -128,7 +128,7 @@ class AddRevenue(graphene.Mutation):
         return revenue
 
 
-class DeleteCharge(graphene.Mutation):
+class DeleteRevenue(graphene.Mutation):
     class Arguments:
         id = graphene.ID(required=True)
 
@@ -145,11 +145,11 @@ class DeleteCharge(graphene.Mutation):
         else:
             status = StatusCodes.NOT_FOUND.value
 
-        return DeleteCharge(status=status)
+        return DeleteRevenue(status=status)
 
 
 class Mutation(object):
     add_revenue = AddRevenue.Field()
     create_flat = CreateFlat.Field()
     join_flat = JoinFlat.Field()
-    delete_charge = DeleteCharge.Field()
+    delete_revenue = DeleteRevenue.Field()
