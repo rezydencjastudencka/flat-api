@@ -30,7 +30,7 @@ INSTALLED_APPS = (
     'transfers',
     'users',
     'session',
-    'fcm',
+    'fcm.apps.FcmConfig',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
