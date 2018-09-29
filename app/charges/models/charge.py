@@ -2,9 +2,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 import numexpr as ne
-from django.db.models.signals import m2m_changed
-from django.dispatch import receiver
-from fcm_django.models import FCMDevice
 
 
 class Charge(models.Model):
@@ -111,12 +108,4 @@ class Charge(models.Model):
         return summary
 
 
-@receiver(m2m_changed, sender=Charge.to_users.through)
-def _send_fcm_message(**kwargs):
-    if not kwargs['action'] == 'post_add':
-        return
-    charge = kwargs['instance']
-    for user_id in kwargs['pk_set']:
-        if user_id != charge.from_user_id:
-            FCMDevice.objects.filter(user_id=user_id).send_message(
-                data={'type': 'new_expense', 'expense_id': str(charge.id)})
+
