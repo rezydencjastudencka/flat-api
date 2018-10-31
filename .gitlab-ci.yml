@@ -1,7 +1,7 @@
 image: docker:latest
 
 variables:
-  KUBE_DOMAIN: api.flat.kubernetes.tobiasz.memleak.pl
+  KUBE_DOMAIN: api.flat.k8s.kazik.memleak.pl
 
 stages:
   - build-test
@@ -55,10 +55,12 @@ deploy-dev:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
   stage: deploy
   script:
-    - command scripts/deploy
+    - command scripts/deployment/deploy
   environment:
     name: dev
     url: http://dev.$KUBE_DOMAIN
+  variables:
+    MYSQL_PVC_SIZE: 2Gi
   only:
     - master
 
@@ -77,13 +79,11 @@ deploy-production:
   only:
     - master
 
-
-
 review:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
   stage: review
   script:
-    - command scripts/deploy
+    - command scripts/deployment/deploy
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: http://$CI_ENVIRONMENT_SLUG.$KUBE_DOMAIN
@@ -97,7 +97,7 @@ stop_review:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
   stage: cleanup
   script:
-    - command scripts/destroy
+    - command scripts/deployment/destroy
   environment:
     name: review/$CI_COMMIT_REF_NAME
     action: stop

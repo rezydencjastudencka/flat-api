@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+API_REPLICAS="${APP_REPLICAS:-1}"
+GCM_KEY="${GCM_KEY:-super_secrect_GCM_key}"
+FCM_SERVER_KEY="${FCM_SERVER_KEY:-super_secrect_FCM_key}"
+
+echo "Deploying API (url: $URL track: $TRACK, replicas: $API_REPLICAS) with $IMAGE_NAME:$IMAGE_VERSION ..."
+
+cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $API_NAME
+  labels:
+    track: "$TRACK"
+    app: "$APP_NAME"
+    tier: api
+    pipeline: "$PIPELINE_ID"
+    build: "$BUILD"
+spec:
+  replicas: $API_REPLICAS
+  selector:
+    matchLabels:
+      tier: api
+      track: "$TRACK"
+      app: "$APP_NAME"
+  template:
+    metadata:
+      labels:
+        name: "$API_NAME"
+        track: "$TRACK"
+        app: "$APP_NAME"
+        tier: api
+        pipeline: "$PIPELINE"
+        build: "$BUILD"
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-pernament
+      containers:
+      - name: app
+        image: "$IMAGE_NAME:$IMAGE_VERSION"
+        imagePullPolicy: Always
+        env:
+        - name: CI_BUILD_ID
+          value: "$BUILD"
+        - name: RAILS_SECRET_KEY
+          value: "$DJANGO_SECRET_KEY"
+        - name: RAILS_DEBUG 
+          value: "False"
+        - name: RAILS_ALLOWED_HOST
+          value: "*"
+        - name: RAILS_GCM_KEY
+          value: "$GCM_KEY"
+        - name: RAILS_CORS_ALLOW_ALL
+          value: "True"
+        - name: RAILS_CORS_WHITELIST
+          value: ""
+        - name: RAILS_DB_NAME
+          value: "$MYSQL_DATABASE"
+        - name: RAILS_DB_USER 
+          value: "$MYSQL_USER"
+        - name: RAILS_DB_PASS
+          value: "$MYSQL_PASSWORD"
+        - name: RAILS_DB_HOST
+          value: "$MYSQL_NAME"
+        - name: RAILS_DB_PORT
+          value: "3306"
+        - name: FCM_SERVER_KEY
+          value: "$FCM_SERVER_KEY"
+        ports:
+        - name: api
+          containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: $API_NAME
+  labels:
+    track: "$TRACK"
+    pipeline_id: "$PIPELINE"
+    build_id: "$BUILD"
+    app: "$APP_NAME"
+    tier: api
+spec:
+  type: NodePort
+  ports:
+    - name: api
+      port: 80
+      targetPort: api
+  selector:
+    track: $TRACK
+    tier: api
+    app: "$APP_NAME"
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: $API_TLS_NAME
+  labels:
+    track: "$TRACK"
+    pipeline_id: "$PIPELINE"
+    build_id: "$BUILD"
+    app: "$APP_NAME"
+    tier: api
+spec:
+  secretName: $API_TLS_NAME
+  issuerRef:
+    name: letsencrypt-prod
+  commonName: $URL
+  dnsNames:
+  - $URL
+  acme:
+    config:
+    - http01:
+        ingress: $API_NAME
+      domains:
+      - $URL
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: $API_NAME
+  namespace: $KUBE_NAMESPACE
+  labels:
+    track: $TRACK
+    pipeline_id: "$PIPELINE"
+    build_id: "$BUILD"
+    app: "$APP_NAME"
+    tier: api
+spec:
+  tls:
+  - secretName: $API_TLS_NAME
+  rules:
+  - host: $URL
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: $API_NAME
+          servicePort: 80
+EOF
+
+echo "Waiting for deployment..."
+kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/$API_NAME"
+
+
