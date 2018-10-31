@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+source common_variables
+
+MYSQL_PVC_NAME="${MYSQL_PVC_NAME:-mysql-pvc}"
+MYSQL_PVC_SIZE="${MYSQL_PVC_SIZE:-10Gi}"
+
+echo "Deploying database"
+
+cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: $MYSQL_PVC_NAME
+  labels:
+    track: $TRACK
+    app: $APP_NAME
+    tier: database
+    pipeline: "$PIPELINE"
+    build: "$BUILD"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: $MYSQL_PVC_SIZE
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $MYSQL_NAME
+  labels:
+    track: $TRACK
+    app: $APP_NAME
+    tier: database
+    pipeline: "$PIPELINE"
+    build: "$BUILD"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      track: $TRACK
+      app: $APP_NAME
+      tier: database
+  template:
+    metadata:
+      labels:
+        track: $TRACK
+        name: $MYSQL_NAME
+        app: $APP_NAME
+        tier: database
+        pipeline: "$PIPELINE"
+        build: "$BUILD"
+    spec:
+      containers:
+      - name: mysql
+        image: mariadb:10
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MYSQL_USER
+          value: "$MYSQL_USER"
+        - name: MYSQL_PASSWORD
+          value: "$MYSQL_PASSWORD"
+        - name: MYSQL_DATABASE
+          value: "$MYSQL_DATABASE"
+        - name: MYSQL_ROOT_PASSWORD
+          value: "scisle_tajne"
+        volumeMounts:
+        - name: mysql-data
+          mountPath: "/var/lib/mysql"
+        ports:
+        - name: mysql
+          containerPort: 3306
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: $MYSQL_PVC_NAME
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: $MYSQL_NAME
+  labels:
+    track: $TRACK
+    app: $APP_NAME
+    tier: database
+    pipeline: "$PIPELINE"
+    build: "$BUILD"
+spec:
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+  selector:
+    app: $APP_NAME
+    tier: database
+EOF
+
+
+echo "Waiting for database deployment..."
+kubectl rollout status -n "$KUBE_NAMESPACE" -w "deployment/$MYSQL_NAME"
+

@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+source common_variables
+
+MIGRATE_DB_NAME="${MIGRATE_DB_NAME:-migrate-db}"
+IMAGE_VERSION="${IMAGE_VERSION:-master}"
+IMAGE_NAME="${IMAGE_NAME:-registry.gitlab.memleak.pl:443/flat/flat-api}"
+DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY:-super_secret_key}"
+
+echo "Migrating database..."
+cat <<EOF | kubectl apply -n $KUBE_NAMESPACE --force -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: $MIGRATE_DB_NAME
+  labels:
+    track: "$TRACK"
+    app: "$APP_NAME"
+    tier: "database"
+    pipeline: "$PIPELINE"
+    build: "$BUILD"
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        name: "$MIGRATE_DB_NAME"
+        track: "$TRACK"
+        tier: "database"
+        pipeline: "$PIPELINE"
+        build: "$BUILD"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: app
+        image: "$IMAGE_NAME:$IMAGE_VERSION"
+        imagePullPolicy: Always
+        command: ["bash", "scripts/docker_entry_migration", "debug"]
+        env:
+        - name: CI_BUILD_ID
+          value: "$BUILD"
+        - name: RAILS_SECRET_KEY
+          value: "$DJANGO_SECRET_KEY"
+        - name: RAILS_DEBUG
+          value: "False"
+        - name: RAILS_ALLOWED_HOST
+          value: "*"
+        - name: RAILS_GCM_KEY
+          value: "dummy_gcm_key"
+        - name: RAILS_CORS_ALLOW_ALL
+          value: "True"
+        - name: RAILS_CORS_WHITELIST
+          value: ""
+        - name: RAILS_DB_NAME
+          value: "$MYSQL_DATABASE"
+        - name: RAILS_DB_USER
+          value: "$MYSQL_USER"
+        - name: RAILS_DB_PASS
+          value: "$MYSQL_PASSWORD"
+        - name: RAILS_DB_HOST
+          value: "$MYSQL_NAME"
+        - name: RAILS_DB_PORT
+          value: "3306"
+        - name: FCM_SERVER_KEY
+          value: "dummy_fcm_key"
+EOF
+
+kubectl -n "$KUBE_NAMESPACE" get jobs
+
+echo "Wait for migration"
+until kubectl -n "$KUBE_NAMESPACE" get jobs $MIGRATE_DB_NAME -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' | grep True ; do echo -n '.'; sleep 1 ; done
+
+echo "Deleting job"
+kubectl -n "$KUBE_NAMESPACE" delete jobs/$MIGRATE_DB_NAME
+

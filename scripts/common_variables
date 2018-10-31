@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+TRACK="${TRACK:-production}"
+APP_NAME="${APP_NAME:-flat}"
+KUBE_NAMESPACE="${KUBE_NAMESPACE:-flat}"
+MYSQL_USER="${MYSQL_USER:-flat}" 
+MYSQL_PASSWORD="${MYSQL_PASSWORD:-flat_mysql_password}" 
+MYSQL_DATABASE="${MYSQL_DATABASE:-flat}"
+PIPELINE="${CI_PIPELINE_ID:-manual-$RANDOM}"
+BUILD="${CI_BUILD_ID:-manual-$RANDOM}"
+MYSQL_NAME="${MYSQL_NAME:-mysql}"
+
+echo "Mysql password: $MYSQL_PASSWORD"
