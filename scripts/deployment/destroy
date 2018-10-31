@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+
+export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+TRACK="${CI_ENVIRONMENT_SLUG}"
+
+echo "Sourcing common variables"
+source "$DEPLOY_ROOT_DIR/common_variables"
+
+kubectl delete all,ing,cert,pvc -l "track=${TRACK},app=flat" -n "$KUBE_NAMESPACE"
+kubectl delete secrets ceph-k8s.$KUBE_NAMESPACE.$MYSQL_PVC_NAME-secret -n "$KUBE_NAMESPACE"
+kubectl delete secrets $API_TLS_NAME -n "$KUBE_NAMESPACE"
