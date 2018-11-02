@@ -61,23 +61,23 @@ deploy-dev:
     url: http://dev.$KUBE_DOMAIN
   variables:
     MYSQL_PVC_SIZE: 2Gi
-  only:
-    - master
+#  only:
+#    - master
 
 
 deploy-production:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
   stage: deploy-production
   script:
-    - mkdir -p ~/.kube
-    - echo $KUBE_PROD_CONFIG | base64 -d > ~/.kube/config
-    - command scripts/deploy_prod
+#    - mkdir -p ~/.kube
+#    - echo $KUBE_PROD_CONFIG | base64 -d > ~/.kube/config
+    - command scripts/deployment/deploy_prod
   environment:
     name: production
-    url: https://flat.kubernetes.memleak.pl
+    url: https://api.flat.k8s.memleak.pl
   when: manual
-  only:
-    - master
+#  only:
+#    - master
 
 review:
   image: registry.gitlab.memleak.pl:443/flat/flat-api/kubectl
