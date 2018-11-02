@@ -60,8 +60,8 @@ spec:
           value: "$MYSQL_PASSWORD"
         - name: MYSQL_DATABASE
           value: "$MYSQL_DATABASE"
-        - name: MYSQL_ROOT_PASSWORD
-          value: "scisle_tajne"
+        - name: MYSQL_RANDOM_ROOT_PASSWORD
+          value: yes
         volumeMounts:
         - name: mysql-data
           mountPath: "/var/lib/mysql"
