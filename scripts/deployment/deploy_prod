@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -e
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+
+export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+unset KUBECONFIG
+unset KUBE_CA_PEM_FILE
+
+CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_URL}"
+CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/http:\/\//}"
+CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/https:\/\//}"
+
+KUBE_URL="$PROD_KUBE_URL"
+KUBE_CA_PEM="$PROD_KUBE_CA_PEM"
+KUBE_TOKEN="$PROD_KUBE_TOKEN"
+
+echo "KUBE_URL: $KUBE_URL"
+echo "KUBE_CA_PEM: $KUBE_CA_PEM"
+echo "KUBE_TOKEN: $KUBE_TOKEN"
+
+TRACK="production"
+KUBE_NAMESPACE="flat-api"
+MYSQL_USER="flat-api"
+MYSQL_DATABASE="flat-api"
+MYSQL_PASSWORD="$PROD_MYSQL_PASSWORD"
+MYSQL_PVC_SIZE="10Gi"
+PIPELINE="${CI_PIPELINE_ID}"
+BUILD="${CI_BUILD_ID}"
+URL="${CI_ENVIRONMENT_HOSTNAME}"
+IMAGE_VERSION="master"
+DJANGO_SECRET_KEY="$PROD_DJANGO_SECRET_KEY"
+GCM_KEY="$PROD_GCM_KEY"
+FCM_SERVER_KEY="$PROD_FCM_SERVER_KEY"
+URL="$CI_ENVIRONMENT_HOSTNAME"
+REPLICAS="1"
+
+if [ -z "$KUBE_URL" ]; then echo "Missing KUBE_URL";  exit 1; fi
+if [ -z "$KUBE_CA_PEM" ]; then echo "Missing KUBE_CA_PEM";  exit 1; fi
+if [ -z "$KUBE_TOKEN" ]; then echo "Missing KUBE_TOKEN";  exit 1; fi
+if [ -z "$DJANGO_SECRET_KEY" ]; then echo "Missing DJANGO_SECRET_KEY";  exit 1; fi 
+if [ -z "$GCM_KEY" ]; then echo "Missing GCM_KEY";  exit 1; fi
+if [ -z "$FCM_SERVER_KEY" ]; then echo "Missing FCM_SERVER_KEY";  exit 1; fi
+if [ -z "$MYSQL_PASSWORD" ]; then echo "Missing MYSQL_PASSWORD";  exit 1; fi
+if [ -z "$URL" ]; then echo "Missing URL";  exit 1; fi
+
+echo "Sourcing common variables"
+source "$DEPLOY_ROOT_DIR/common_variables"
+
+echo "Running deploy mysql"
+source "$DEPLOY_ROOT_DIR/deploy_mysql"
+
+echo "Running migrate database"
+source "$DEPLOY_ROOT_DIR/migrate_database"
+
+echo "Running deploy app"
+source "$DEPLOY_ROOT_DIR/deploy_app"
+
+echo "Application is accessible at: ${URL}"
+echo ""
