@@ -71,10 +71,10 @@ deploy-production:
   script:
     - mkdir -p ~/.kube
     - echo $KUBE_PROD_CONFIG | base64 -d > ~/.kube/config
-    - command scripts/deploy_prod
+    - command scripts/deployment/deploy_prod
   environment:
     name: production
-    url: https://flat.kubernetes.memleak.pl
+    url: https://api.flat.memleak.pl
   when: manual
   only:
     - master
