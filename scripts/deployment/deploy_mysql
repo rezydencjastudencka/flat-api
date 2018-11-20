@@ -13,8 +13,6 @@ metadata:
     track: $TRACK
     app: $APP_NAME
     tier: database
-    pipeline: "$PIPELINE"
-    build: "$BUILD"
 spec:
   accessModes:
     - ReadWriteOnce
@@ -30,8 +28,6 @@ metadata:
     track: $TRACK
     app: $APP_NAME
     tier: database
-    pipeline: "$PIPELINE"
-    build: "$BUILD"
 spec:
   replicas: 1
   selector:
@@ -46,8 +42,6 @@ spec:
         name: $MYSQL_NAME
         app: $APP_NAME
         tier: database
-        pipeline: "$PIPELINE"
-        build: "$BUILD"
     spec:
       containers:
       - name: mysql
@@ -81,8 +75,6 @@ metadata:
     track: $TRACK
     app: $APP_NAME
     tier: database
-    pipeline: "$PIPELINE"
-    build: "$BUILD"
 spec:
   ports:
     - name: mysql
