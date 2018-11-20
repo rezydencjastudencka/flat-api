@@ -12,19 +12,10 @@ done
 export DEPLOY_ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 unset KUBECONFIG
-#unset KUBE_CA_PEM_FILE
 
 CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_URL}"
 CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/http:\/\//}"
 CI_ENVIRONMENT_HOSTNAME="${CI_ENVIRONMENT_HOSTNAME/https:\/\//}"
-
-#KUBE_URL="$PROD_KUBE_URL"
-#KUBE_CA_PEM="$PROD_KUBE_CA_PEM"
-#KUBE_TOKEN="$PROD_KUBE_TOKEN"
-
-echo "KUBE_URL: $KUBE_URL"
-echo "KUBE_CA_PEM: $KUBE_CA_PEM"
-echo "KUBE_TOKEN: $KUBE_TOKEN"
 
 TRACK="production"
 KUBE_NAMESPACE="flat-api"
@@ -42,9 +33,6 @@ FCM_SERVER_KEY="$PROD_FCM_SERVER_KEY"
 URL="$CI_ENVIRONMENT_HOSTNAME"
 REPLICAS="1"
 
-if [ -z "$KUBE_URL" ]; then echo "Missing KUBE_URL";  exit 1; fi
-if [ -z "$KUBE_CA_PEM" ]; then echo "Missing KUBE_CA_PEM";  exit 1; fi
-if [ -z "$KUBE_TOKEN" ]; then echo "Missing KUBE_TOKEN";  exit 1; fi
 if [ -z "$DJANGO_SECRET_KEY" ]; then echo "Missing DJANGO_SECRET_KEY";  exit 1; fi 
 if [ -z "$GCM_KEY" ]; then echo "Missing GCM_KEY";  exit 1; fi
 if [ -z "$FCM_SERVER_KEY" ]; then echo "Missing FCM_SERVER_KEY";  exit 1; fi
