@@ -5,7 +5,7 @@ from django.db import transaction
 from graphene_django.types import DjangoObjectType
 
 from charges.models import Flat, Profile
-from session.decorators import empty_if_unauthenticated, none_if_unauthenticated, raise_if_unauthenticated
+from session.decorators import none_if_unauthenticated, raise_if_unauthenticated
 from .models import Charge
 
 
@@ -50,21 +50,21 @@ class Query(object):
                              month=graphene.Int(required=True))
     users = graphene.List(UserType)
 
-    @empty_if_unauthenticated
+    @raise_if_unauthenticated
     def resolve_expenses(self, info, **kwargs):
         year = kwargs.get('year')
         month = kwargs.get('month')
 
         return Charge.get_expenses(year, month, info.context.user)
 
-    @empty_if_unauthenticated
+    @raise_if_unauthenticated
     def resolve_revenues(self, info, **kwargs):
         year = kwargs.get('year')
         month = kwargs.get('month')
 
         return Charge.get_revenues(year, month, info.context.user)
 
-    @empty_if_unauthenticated
+    @raise_if_unauthenticated
     def resolve_users(self, info, **kwargs):
         return User.objects.filter(profile__flat=info.context.user.profile.flat)
 
