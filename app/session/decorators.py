@@ -11,14 +11,6 @@ def require_login(func):
     return decorator
 
 
-def empty_if_unauthenticated(func):
-    def decorator(self, info, *args, **kwargs):
-        if not info.context.user.is_authenticated:
-            return []
-        return func(self, info, *args, **kwargs)
-
-    return decorator
-
 def none_if_unauthenticated(func):
     def decorator(self, info, *args, **kwargs):
         if not info.context.user.is_authenticated:
