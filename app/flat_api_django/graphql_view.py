@@ -10,7 +10,7 @@ class FlatGraphQLView(GraphQLView):
         if hasattr(error, 'original_error') and error.original_error:
             formatted = {"message": str(error.original_error)}
             if isinstance(error.original_error, UnauthorizedError):
-                formatted['code'] = "401"
+                formatted['code'] = 401
             return formatted
 
         return GraphQLView.format_error(error)
