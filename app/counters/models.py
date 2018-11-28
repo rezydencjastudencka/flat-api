@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.db import models
+from django_prometheus.models import ExportModelOperationsMixin
 from gcm import GCM
 
 
 # Create your models here.
-class Counter(models.Model):
+class Counter(ExportModelOperationsMixin('counter'), models.Model):
     name = models.CharField(max_length=255, unique=True)
     counter = models.IntegerField()
 
