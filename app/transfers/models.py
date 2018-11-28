@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
 from django.db import models
-
+from django_prometheus.models import ExportModelOperationsMixin
 from charges.models import Charge
 
 
-class Transfer(models.Model):
+class Transfer(ExportModelOperationsMixin('transfer'), models.Model):
     name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()

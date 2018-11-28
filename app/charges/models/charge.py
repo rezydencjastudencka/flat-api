@@ -5,9 +5,10 @@ import numexpr as ne
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from fcm_django.models import FCMDevice
+from django_prometheus.models import ExportModelOperationsMixin
 
 
-class Charge(models.Model):
+class Charge(ExportModelOperationsMixin('charge'), models.Model):
     name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     raw_amount = models.CharField(max_length=1023)

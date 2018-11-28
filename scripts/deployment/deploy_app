@@ -33,6 +33,8 @@ spec:
         tier: api
         pipeline: "$PIPELINE"
         build: "$BUILD"
+    annotations:
+        prometheus.io/scrape: 'true'
     spec:
       imagePullSecrets:
       - name: gitlab-registry-pernament
