@@ -18,8 +18,9 @@ from django.contrib import admin
 
 from flat_api_django.graphql_view import FlatGraphQLView
 
-
 from django.http import HttpResponse
+
+
 def ok(request):
     return HttpResponse('')
 
@@ -34,5 +35,5 @@ urlpatterns = [
     url(r'^fcm/', include('fcm.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^graphql', FlatGraphQLView.as_view(graphiql=True)),
-
+    url('', include('django_prometheus.urls')),
 ]

@@ -1,4 +1,5 @@
-graphene
+django-prometheus==1.0.15
+graphene==2.1.3
 certifi==2017.11.5
 chardet==3.0.4
 Django==2.0
