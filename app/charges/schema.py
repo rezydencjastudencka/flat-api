@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from graphene_django.types import DjangoObjectType
 
-from charges.models import Flat, Profile
+from charges.models import Flat, Profile, Charge
 from session.decorators import none_if_unauthenticated, raise_if_unauthenticated
-from .models import Charge
+from transfers.models import Transfer
 
 
 class StatusCodes(graphene.Enum):
@@ -23,6 +23,11 @@ class ExpenseType(DjangoObjectType):
     class Meta:
         model = Charge
         exclude_fields = ('raw_amount',)
+
+
+class TransferType(DjangoObjectType):
+    class Meta:
+        model = Transfer
 
 
 class RevenueType(DjangoObjectType):
@@ -48,6 +53,10 @@ class Query(object):
     revenues = graphene.List(RevenueType,
                              year=graphene.Int(required=True),
                              month=graphene.Int(required=True))
+    transfers = graphene.List(TransferType,
+                              year=graphene.Int(required=True),
+                              month=graphene.Int(required=True))
+
     users = graphene.List(UserType)
 
     @raise_if_unauthenticated
@@ -63,6 +72,13 @@ class Query(object):
         month = kwargs.get('month')
 
         return Charge.get_revenues(year, month, info.context.user)
+
+    @raise_if_unauthenticated
+    def resolve_transfers(self, info, **kwargs):
+        year = kwargs.get('year')
+        month = kwargs.get('month')
+
+        return Transfer.get_user_transfers(year, month, info.context.user)
 
     @raise_if_unauthenticated
     def resolve_users(self, info, **kwargs):
