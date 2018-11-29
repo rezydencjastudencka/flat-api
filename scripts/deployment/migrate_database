@@ -65,6 +65,3 @@ kubectl -n "$KUBE_NAMESPACE" get jobs
 echo "Wait for migration"
 until kubectl -n "$KUBE_NAMESPACE" get jobs $MIGRATE_DB_NAME -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' | grep True ; do echo -n '.'; sleep 1 ; done
 
-echo "Deleting job"
-kubectl -n "$KUBE_NAMESPACE" delete jobs/$MIGRATE_DB_NAME
-
