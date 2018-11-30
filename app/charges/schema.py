@@ -56,6 +56,7 @@ class Query(object):
     transfers = graphene.List(TransferType,
                               year=graphene.Int(required=True),
                               month=graphene.Int(required=True))
+    me = graphene.Field(UserType)
 
     users = graphene.List(UserType)
 
@@ -79,6 +80,10 @@ class Query(object):
         month = kwargs.get('month')
 
         return Transfer.get_user_transfers(year, month, info.context.user)
+
+    @raise_if_unauthenticated
+    def resolve_me(self, info, **kwargs):
+        return info.context.user
 
     @raise_if_unauthenticated
     def resolve_users(self, info, **kwargs):
