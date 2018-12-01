@@ -169,8 +169,29 @@ class DeleteRevenue(graphene.Mutation):
         return DeleteRevenue(status=status)
 
 
+class AddTransfer(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+        amount = graphene.Float(required=True)
+        date = graphene.types.datetime.Date(required=True)
+        to = graphene.NonNull(graphene.ID)
+
+    Output = TransferType
+
+    @raise_if_unauthenticated
+    def mutate(self, info, name, amount, date, to):
+        transfer = Transfer(from_user=info.context.user,
+                            to_user=User.objects.get(pk=to),
+                            amount=amount, name=name,
+                            date=date)
+        transfer.save()
+
+        return transfer
+
+
 class Mutation(object):
     add_revenue = AddRevenue.Field()
     create_flat = CreateFlat.Field()
     join_flat = JoinFlat.Field()
     delete_revenue = DeleteRevenue.Field()
+    add_transfer = AddTransfer.Field()
