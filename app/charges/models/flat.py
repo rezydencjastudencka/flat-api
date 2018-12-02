@@ -12,3 +12,6 @@ class Flat(ExportModelOperationsMixin('flat'), models.Model):
     name = models.CharField(max_length=255)
     join_token = models.CharField(max_length=32, default=generate_join_token)
 
+    def __str__(self):
+        return self.name
+
