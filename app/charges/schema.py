@@ -46,6 +46,30 @@ class UserType(DjangoObjectType):
         only_fields = ('id', 'username')
 
 
+class ChargeSummaryType(graphene.ObjectType):
+    user = graphene.Field(UserType)
+    amount = graphene.Float()
+
+    def resolve_user(self, info, **kwargs):
+        return self['user']
+
+    def resolve_amount(self, info, **kwargs):
+        return self['amount']
+
+
+class SummaryType(graphene.ObjectType):
+    monthly = graphene.List(ChargeSummaryType,
+                            year=graphene.Int(required=True),
+                            month=graphene.Int(required=True))
+
+    def resolve_monthly(self, info, **kwargs):
+        year = kwargs.get('year')
+        month = kwargs.get('month')
+
+        summary = Charge.get_summary_new(year, month, info.context.user)
+        return summary.values()
+
+
 class Query(object):
     expenses = graphene.List(ExpenseType,
                              year=graphene.Int(required=True),
@@ -59,6 +83,8 @@ class Query(object):
     me = graphene.Field(UserType)
 
     users = graphene.List(UserType)
+
+    summary = graphene.Field(SummaryType)
 
     @raise_if_unauthenticated
     def resolve_expenses(self, info, **kwargs):
@@ -88,6 +114,10 @@ class Query(object):
     @raise_if_unauthenticated
     def resolve_users(self, info, **kwargs):
         return User.objects.filter(profile__flat=info.context.user.profile.flat)
+
+    @raise_if_unauthenticated
+    def resolve_summary(self, info):
+        return SummaryType()
 
 
 class CreateFlat(graphene.Mutation):

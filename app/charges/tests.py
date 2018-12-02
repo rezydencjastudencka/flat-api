@@ -2,7 +2,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from charges.models import Charge
+from charges.models import Charge, Flat, Profile
 from transfers.models import Transfer
 
 
@@ -77,3 +77,46 @@ class TransferTestCase(TestCase):
 
         fetched_transfers = Transfer.get_user_transfers(2018, 11, self.fetching_user)
         self.assertListEqual([t.id for t in fetched_transfers], [])
+
+
+class ChargesSummaryTestCase(TestCase):
+    def setUp(self):
+        self.fetching_user_flat = Flat.objects.create(name="fetching_user_flat")
+        self.other_flat = Flat.objects.create(name="other_flat")
+        self.fetching_user = User.objects.create_user("fetching_user")
+        Profile.objects.create(flat=self.fetching_user_flat, user=self.fetching_user)
+        self.same_flat_user = User.objects.create_user("user_in_same_flat")
+        Profile.objects.create(flat=self.fetching_user_flat, user=self.same_flat_user)
+        self.other_flat_user = User.objects.create_user("user_in_other_flat")
+        Profile.objects.create(flat=self.other_flat, user=self.other_flat_user)
+
+    def test_summary_should_return_only_users_in_flat(self):
+        summary = Charge.get_summary_new(2018, 12, self.fetching_user)
+        self.assertListEqual([e['user'].id for e in summary.values()],
+                             [self.fetching_user.id, self.same_flat_user.id])
+
+    def test_summary_should_return_user_from_other_flat_if_charge_from_him_exists(self):
+        charge = Charge(name="charge from other flat user", raw_amount="123",
+                        date=datetime.date(2018, 12, 20),
+                        from_user=self.other_flat_user)
+
+        charge.save()
+        charge.to_users.set([self.fetching_user])
+
+        summary = Charge.get_summary_new(2018, 12, self.fetching_user)
+        self.assertListEqual(
+            [e['user'].id for e in summary.values()],
+            [self.fetching_user.id, self.same_flat_user.id, self.other_flat_user.id])
+
+    def test_summary_should_return_user_from_other_flat_if_charge_to_him_exists(self):
+        charge = Charge(name="charge to other flat user", raw_amount="123",
+                        date=datetime.date(2018, 12, 20),
+                        from_user=self.fetching_user)
+
+        charge.save()
+        charge.to_users.set([self.other_flat_user])
+
+        summary = Charge.get_summary_new(2018, 12, self.fetching_user)
+        self.assertListEqual(
+            [e['user'].id for e in summary.values()],
+            [self.fetching_user.id, self.same_flat_user.id, self.other_flat_user.id])

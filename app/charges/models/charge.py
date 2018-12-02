@@ -114,6 +114,33 @@ class Charge(ExportModelOperationsMixin('charge'), models.Model):
 
         return summary
 
+    @staticmethod
+    def get_summary_new(year, month, user):
+        revenues = Charge.get_revenues(year, month, user)
+        expenses = Charge.get_expenses(year, month, user)
+
+        summary = {}
+
+        def get_or_add(user_to_get):
+            if user_to_get.id not in summary.keys():
+                summary[user_to_get.id] = {'user': user_to_get, 'amount': 0}
+            return summary[user_to_get.id]
+
+        for revenue in revenues:
+            rev_users = revenue.to_users.all()
+            for rev_user in rev_users:
+                entry = get_or_add(rev_user)
+                entry['amount'] -= revenue.amount / len(rev_users)
+
+        for expense in expenses:
+            entry = get_or_add(expense.from_user)
+            entry['amount'] += expense.amount / expense.to_users.count()
+
+        for user in User.objects.filter(profile__flat=user.profile.flat):
+            get_or_add(user)
+
+        return summary
+
 
 @receiver(m2m_changed, sender=Charge.to_users.through)
 def _send_fcm_message(**kwargs):
