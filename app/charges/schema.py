@@ -189,9 +189,30 @@ class AddTransfer(graphene.Mutation):
         return transfer
 
 
+class DeleteTransfer(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    status = graphene.Field(StatusCodes, required=True)
+
+    @raise_if_unauthenticated
+    def mutate(self, info, id):
+        deletedObjs, _ = Transfer.objects.filter(
+            from_user=info.context.user,
+            id=id
+        ).delete()
+        if deletedObjs >= 1:
+            status = StatusCodes.SUCCESS.value
+        else:
+            status = StatusCodes.NOT_FOUND.value
+
+        return DeleteTransfer(status=status)
+
+
 class Mutation(object):
     add_revenue = AddRevenue.Field()
     create_flat = CreateFlat.Field()
     join_flat = JoinFlat.Field()
     delete_revenue = DeleteRevenue.Field()
     add_transfer = AddTransfer.Field()
+    delete_transfer = DeleteTransfer.Field()
