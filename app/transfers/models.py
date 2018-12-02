@@ -12,6 +12,9 @@ class Transfer(ExportModelOperationsMixin('transfer'), models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="outgoing_transfers")
     to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="incoming_transfers")
 
+    def __str__(self):
+        return '{}: {}'.format(self.from_user.username, self.name)
+
     @staticmethod
     def get_user_transfers(year, month, user):
         return Transfer.objects.filter(

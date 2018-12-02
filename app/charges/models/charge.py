@@ -16,6 +16,9 @@ class Charge(ExportModelOperationsMixin('charge'), models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="revenues")
     to_users = models.ManyToManyField(User, related_name="expenses")
 
+    def __str__(self):
+        return '{}: {}'.format(self.from_user.username, self.name)
+
     def clean(self):
         flat = self.from_user.profile.flat
         if any(user.profile.flat != flat for user in self.to_users.all()):
