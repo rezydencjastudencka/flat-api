@@ -15,7 +15,11 @@ def device(request):
     if 'registration_token' not in req:
         return HttpResponseBadRequest()
 
-    FCMDevice(registration_id=req['registration_token'],
-              type='android', user=request.user).save()
+    devices = FCMDevice.objects.filter(registration_id=req['registration_token'],
+                                       user=request.user)
+    if devices.count() != 1:
+        devices.delete()
+        FCMDevice(registration_id=req['registration_token'],
+                  type='android', user=request.user).save()
 
     return HttpResponse(status=204)
