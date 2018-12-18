@@ -1,10 +1,12 @@
 import graphene
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from django.db import transaction
 from graphene_django.types import DjangoObjectType
 
 from charges.models import Flat, Profile, Charge
+from flat_api_django.exceptions import UnauthorizedError
 from session.decorators import none_if_unauthenticated, raise_if_unauthenticated
 from transfers.models import Transfer
 
@@ -251,6 +253,31 @@ class DeleteTransfer(graphene.Mutation):
         return DeleteTransfer(status=status)
 
 
+class Login(graphene.Mutation):
+    class Arguments:
+        username = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    Output = UserType
+
+    def mutate(self, info, username, password):
+        user = authenticate(username=username, password=password)
+        if user is None or not user.is_active:
+            raise UnauthorizedError('Unauthorized')  # TODO
+
+        login(info.context, user)
+        return user
+
+
+class Logout(graphene.Mutation):
+    status = graphene.Field(StatusCodes, required=True)
+
+    @raise_if_unauthenticated
+    def mutate(self, info):
+        logout(info.context)
+        return Logout(status=StatusCodes.SUCCESS.value)
+
+
 class Mutation(object):
     add_revenue = AddRevenue.Field()
     create_flat = CreateFlat.Field()
@@ -258,3 +285,5 @@ class Mutation(object):
     delete_revenue = DeleteRevenue.Field()
     add_transfer = AddTransfer.Field()
     delete_transfer = DeleteTransfer.Field()
+    login = Login.Field()
+    logout = Logout.Field()
