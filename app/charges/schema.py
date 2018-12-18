@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from django.db import transaction
+from fcm_django.models import FCMDevice
 from graphene_django.types import DjangoObjectType
 
 from charges.models import Flat, Profile, Charge
@@ -278,6 +279,24 @@ class Logout(graphene.Mutation):
         return Logout(status=StatusCodes.SUCCESS.value)
 
 
+class RegisterDevice(graphene.Mutation):
+    class Arguments:
+        registration_token = graphene.String(required=True)
+
+    status = graphene.Field(StatusCodes, required=True)
+
+    @raise_if_unauthenticated
+    def mutate(self, info, registration_token):
+        devices = FCMDevice.objects.filter(registration_id=registration_token,
+                                           user=info.context.user)
+        if devices.count() != 1:
+            devices.delete()
+            FCMDevice(registration_id=registration_token,
+                      type='android', user=info.context.user).save()
+
+        return RegisterDevice(status=StatusCodes.SUCCESS.value)
+
+
 class Mutation(object):
     add_revenue = AddRevenue.Field()
     create_flat = CreateFlat.Field()
@@ -287,3 +306,4 @@ class Mutation(object):
     delete_transfer = DeleteTransfer.Field()
     login = Login.Field()
     logout = Logout.Field()
+    register_device = RegisterDevice.Field()
