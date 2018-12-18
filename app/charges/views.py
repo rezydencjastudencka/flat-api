@@ -50,10 +50,7 @@ def delete(request):
 @require_GET
 @require_login
 def get_expense(request, id):
-    expense = Charge.objects.filter(
-        to_users=request.user,
-        id=id
-    ).first()
+    expense = Charge.get_expense(id, request.user)
 
     if expense is None:
         return HttpResponseNotFound()

@@ -74,9 +74,13 @@ class Query(object):
     expenses = graphene.List(ExpenseType,
                              year=graphene.Int(required=True),
                              month=graphene.Int(required=True))
+    expense = graphene.Field(ExpenseType,
+                             id=graphene.ID(required=True))
     revenues = graphene.List(RevenueType,
                              year=graphene.Int(required=True),
                              month=graphene.Int(required=True))
+    revenue = graphene.Field(RevenueType,
+                             id=graphene.ID(required=True))
     transfers = graphene.List(TransferType,
                               year=graphene.Int(required=True),
                               month=graphene.Int(required=True))
@@ -94,11 +98,19 @@ class Query(object):
         return Charge.get_expenses(year, month, info.context.user)
 
     @raise_if_unauthenticated
+    def resolve_expense(self, info, id, **kwargs):
+        return Charge.get_expense(id, info.context.user)
+
+    @raise_if_unauthenticated
     def resolve_revenues(self, info, **kwargs):
         year = kwargs.get('year')
         month = kwargs.get('month')
 
         return Charge.get_revenues(year, month, info.context.user)
+
+    @raise_if_unauthenticated
+    def resolve_revenue(self, info, id, **kwargs):
+        return Charge.get_revenue(id, info.context.user)
 
     @raise_if_unauthenticated
     def resolve_transfers(self, info, **kwargs):
