@@ -79,12 +79,26 @@ class Charge(ExportModelOperationsMixin('charge'), models.Model):
         )
 
     @staticmethod
+    def get_revenue(id, user):
+        return Charge.objects.filter(
+            id=id,
+            from_user=user
+        ).first()
+
+    @staticmethod
     def get_expenses(year, month, user):
         return Charge.objects.filter(
             date__year=year,
             date__month=month,
             to_users=user
         )
+
+    @staticmethod
+    def get_expense(id, user):
+        return Charge.objects.filter(
+            id=id,
+            to_users=user
+        ).first()
 
     @staticmethod
     def get_summary(year, month, user, revenues=None, expenses=None):

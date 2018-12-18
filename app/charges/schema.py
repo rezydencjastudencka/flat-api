@@ -1,10 +1,13 @@
 import graphene
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
 from django.db import transaction
+from fcm_django.models import FCMDevice
 from graphene_django.types import DjangoObjectType
 
 from charges.models import Flat, Profile, Charge
+from flat_api_django.exceptions import UnauthorizedError
 from session.decorators import none_if_unauthenticated, raise_if_unauthenticated
 from transfers.models import Transfer
 
@@ -74,9 +77,13 @@ class Query(object):
     expenses = graphene.List(ExpenseType,
                              year=graphene.Int(required=True),
                              month=graphene.Int(required=True))
+    expense = graphene.Field(ExpenseType,
+                             id=graphene.ID(required=True))
     revenues = graphene.List(RevenueType,
                              year=graphene.Int(required=True),
                              month=graphene.Int(required=True))
+    revenue = graphene.Field(RevenueType,
+                             id=graphene.ID(required=True))
     transfers = graphene.List(TransferType,
                               year=graphene.Int(required=True),
                               month=graphene.Int(required=True))
@@ -94,11 +101,19 @@ class Query(object):
         return Charge.get_expenses(year, month, info.context.user)
 
     @raise_if_unauthenticated
+    def resolve_expense(self, info, id, **kwargs):
+        return Charge.get_expense(id, info.context.user)
+
+    @raise_if_unauthenticated
     def resolve_revenues(self, info, **kwargs):
         year = kwargs.get('year')
         month = kwargs.get('month')
 
         return Charge.get_revenues(year, month, info.context.user)
+
+    @raise_if_unauthenticated
+    def resolve_revenue(self, info, id, **kwargs):
+        return Charge.get_revenue(id, info.context.user)
 
     @raise_if_unauthenticated
     def resolve_transfers(self, info, **kwargs):
@@ -239,6 +254,49 @@ class DeleteTransfer(graphene.Mutation):
         return DeleteTransfer(status=status)
 
 
+class Login(graphene.Mutation):
+    class Arguments:
+        username = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    Output = UserType
+
+    def mutate(self, info, username, password):
+        user = authenticate(username=username, password=password)
+        if user is None or not user.is_active:
+            raise UnauthorizedError('Unauthorized')  # TODO
+
+        login(info.context, user)
+        return user
+
+
+class Logout(graphene.Mutation):
+    status = graphene.Field(StatusCodes, required=True)
+
+    @raise_if_unauthenticated
+    def mutate(self, info):
+        logout(info.context)
+        return Logout(status=StatusCodes.SUCCESS.value)
+
+
+class RegisterDevice(graphene.Mutation):
+    class Arguments:
+        registration_token = graphene.String(required=True)
+
+    status = graphene.Field(StatusCodes, required=True)
+
+    @raise_if_unauthenticated
+    def mutate(self, info, registration_token):
+        devices = FCMDevice.objects.filter(registration_id=registration_token,
+                                           user=info.context.user)
+        if devices.count() != 1:
+            devices.delete()
+            FCMDevice(registration_id=registration_token,
+                      type='android', user=info.context.user).save()
+
+        return RegisterDevice(status=StatusCodes.SUCCESS.value)
+
+
 class Mutation(object):
     add_revenue = AddRevenue.Field()
     create_flat = CreateFlat.Field()
@@ -246,3 +304,6 @@ class Mutation(object):
     delete_revenue = DeleteRevenue.Field()
     add_transfer = AddTransfer.Field()
     delete_transfer = DeleteTransfer.Field()
+    login = Login.Field()
+    logout = Logout.Field()
+    register_device = RegisterDevice.Field()
