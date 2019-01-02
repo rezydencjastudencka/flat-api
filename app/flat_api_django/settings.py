@@ -28,7 +28,6 @@ INSTALLED_APPS = (
     'counters',
     'charges',
     'transfers',
-    'users',
     'session',
     'fcm',
     'corsheaders',

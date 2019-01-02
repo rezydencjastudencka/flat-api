@@ -22,17 +22,13 @@ from django.http import HttpResponse
 
 
 def ok(request):
-    return HttpResponse('')
+    return HttpResponse('ok')
 
 
 urlpatterns = [
     url(r'^$', ok),
     url(r'^counter/', include('counters.urls')),
     url(r'^session/', include('session.urls')),
-    url(r'^charge/', include('charges.urls')),
-    url(r'^transfer/', include('transfers.urls')),
-    url(r'^user/', include('users.urls')),
-    url(r'^fcm/', include('fcm.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^graphql', FlatGraphQLView.as_view(graphiql=True)),
     url('', include('django_prometheus.urls')),
