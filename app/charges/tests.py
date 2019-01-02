@@ -91,7 +91,7 @@ class ChargesSummaryTestCase(TestCase):
         Profile.objects.create(flat=self.other_flat, user=self.other_flat_user)
 
     def test_summary_should_return_only_users_in_flat(self):
-        summary = Charge.get_summary_new(2018, 12, self.fetching_user)
+        summary = Charge.get_summary(2018, 12, self.fetching_user)
         self.assertSetEqual(set([e['user'].id for e in summary.values()]),
                             {self.fetching_user.id, self.same_flat_user.id})
 
@@ -103,7 +103,7 @@ class ChargesSummaryTestCase(TestCase):
         charge.save()
         charge.to_users.set([self.fetching_user])
 
-        summary = Charge.get_summary_new(2018, 12, self.fetching_user)
+        summary = Charge.get_summary(2018, 12, self.fetching_user)
         self.assertSetEqual(
             set([e['user'].id for e in summary.values()]),
             {self.fetching_user.id, self.same_flat_user.id, self.other_flat_user.id})
@@ -116,7 +116,7 @@ class ChargesSummaryTestCase(TestCase):
         charge.save()
         charge.to_users.set([self.other_flat_user])
 
-        summary = Charge.get_summary_new(2018, 12, self.fetching_user)
+        summary = Charge.get_summary(2018, 12, self.fetching_user)
         self.assertSetEqual(
             set([e['user'].id for e in summary.values()]),
             {self.fetching_user.id, self.same_flat_user.id, self.other_flat_user.id})

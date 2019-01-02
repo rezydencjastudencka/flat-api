@@ -69,7 +69,7 @@ class SummaryType(graphene.ObjectType):
         year = kwargs.get('year')
         month = kwargs.get('month')
 
-        summary = Charge.get_summary_new(year, month, info.context.user)
+        summary = Charge.get_summary(year, month, info.context.user)
         return summary.values()
 
 
