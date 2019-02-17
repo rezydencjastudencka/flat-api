@@ -6,7 +6,7 @@ from django.db import transaction
 from fcm_django.models import FCMDevice
 from graphene_django.types import DjangoObjectType
 
-from charges.models import Flat, Profile, Charge
+from charges.models import Flat, Profile, Charge, Category
 from flat_api_django.exceptions import UnauthorizedError
 from session.decorators import none_if_unauthenticated, raise_if_unauthenticated
 from transfers.models import Transfer
@@ -15,6 +15,12 @@ from transfers.models import Transfer
 class StatusCodes(graphene.Enum):
     NOT_FOUND = 0
     SUCCESS = 1
+
+
+class CategoryType(DjangoObjectType):
+    class Meta:
+        model = Category
+        exclude_fields = ('charge_set',)
 
 
 class ExpenseType(DjangoObjectType):
@@ -87,6 +93,8 @@ class Query(object):
     transfers = graphene.List(TransferType,
                               year=graphene.Int(required=True),
                               month=graphene.Int(required=True))
+    categories = graphene.List(CategoryType)
+
     me = graphene.Field(UserType)
 
     users = graphene.List(UserType)
@@ -121,6 +129,10 @@ class Query(object):
         month = kwargs.get('month')
 
         return Transfer.get_user_transfers(year, month, info.context.user)
+
+    @raise_if_unauthenticated
+    def resolve_categories(self, info, **kwargs):
+        return Category.objects.all()
 
     @raise_if_unauthenticated
     def resolve_me(self, info, **kwargs):
@@ -177,14 +189,16 @@ class AddRevenue(graphene.Mutation):
         amount = graphene.String(required=True)
         date = graphene.types.datetime.Date(required=True)
         to = graphene.List(graphene.NonNull(graphene.ID))
+        category = graphene.ID(required=False)
 
     Output = RevenueType
 
     @none_if_unauthenticated
-    def mutate(self, info, name, amount, date, to):
+    def mutate(self, info, name, amount, date, to, **kwargs):
         with transaction.atomic():
+            category_id = kwargs.get('category', None)
             revenue = Charge(from_user=info.context.user, raw_amount=amount, name=name,
-                             date=date)
+                             date=date, category_id=category_id)
             revenue.save()
 
             users = User.objects.filter(id__in=to)
