@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 
-from charges.models import Charge, Flat, Profile
+from charges.models import Charge, Flat, Profile, Category
 
 
 class UserProfileInline(admin.StackedInline):
@@ -20,3 +20,4 @@ admin.site.register(User, UserProfileAdmin)
 
 admin.site.register(Charge)
 admin.site.register(Flat)
+admin.site.register(Category)

@@ -7,6 +7,8 @@ from django.dispatch import receiver
 from fcm_django.models import FCMDevice
 from django_prometheus.models import ExportModelOperationsMixin
 
+from charges.models.category import Category
+
 
 class Charge(ExportModelOperationsMixin('charge'), models.Model):
     name = models.CharField(max_length=255)
@@ -15,6 +17,7 @@ class Charge(ExportModelOperationsMixin('charge'), models.Model):
     date = models.DateField()
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="revenues")
     to_users = models.ManyToManyField(User, related_name="expenses")
+    category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return '{}: {}'.format(self.from_user.username, self.name)
