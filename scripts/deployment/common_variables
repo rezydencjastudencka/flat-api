@@ -12,7 +12,7 @@ PIPELINE="${PIPELINE:-manual-$RANDOM}"
 BUILD="${BUILD:-manual-$RANDOM}"
 IMAGE_VERSION="${IMAGE_VERSION:-master}"
 IMAGE_NAME="${IMAGE_NAME:-registry.gitlab.memleak.pl:443/flat/flat-api}"
-DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY:-super_secret_key}"
+DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY:-tg4s%p#3qsa-_aq^^9i\$yxn4(n-o4@4^3o^&(5r0jxf9lfyi*l}"
 API_NAME="${API_NAME:-flat-api-$TRACK}"
 API_TLS_NAME="${API_TLS_NAME:-$API_NAME-tls}"
 
